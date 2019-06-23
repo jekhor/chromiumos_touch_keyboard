@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
