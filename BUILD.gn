@@ -1,0 +1,133 @@
+# Copyright 2018 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//common-mk/pkg_config.gni")
+
+group("all") {
+  deps = [
+    ":touch_keyboard_handler",
+    ":touchkb_haptic_test",
+  ]
+  if (use.test) {
+    deps += [
+      ":evdevsource_test",
+      ":eventkey_test",
+      ":slot_test",
+      ":statemachine_test",
+      ":uinputdevice_test",
+    ]
+  }
+}
+
+pkg_config("target_defaults") {
+  pkg_deps = [ "libchrome-${libbase_ver}" ]
+}
+
+executable("touch_keyboard_handler") {
+  configs += [ ":target_defaults" ]
+  sources = [
+    "evdevsource.cc",
+    "fakekeyboard.cc",
+    "faketouchpad.cc",
+    "haptic/ff_driver.cc",
+    "haptic/touch_ff_manager.cc",
+    "main.cc",
+    "statemachine/eventkey.cc",
+    "statemachine/slot.cc",
+    "statemachine/statemachine.cc",
+    "uinputdevice.cc",
+  ]
+}
+
+pkg_config("touchkb_haptic_test_config") {
+  pkg_deps = [ "libbrillo-${libbase_ver}" ]
+}
+
+executable("touchkb_haptic_test") {
+  configs += [
+    ":target_defaults",
+    ":touchkb_haptic_test_config",
+  ]
+  sources = [
+    "haptic/ff_driver.cc",
+    "haptic/haptic_test.cc",
+  ]
+}
+
+if (use.test) {
+  executable("eventkey_test") {
+    configs += [
+      # //common-mk:test should be at the top. crbug.com/887845
+      # TODO(crbug.com/887845): Remove this note after library order issue is resolved.
+      "//common-mk:test",
+      ":target_defaults",
+    ]
+    sources = [
+      "statemachine/eventkey.cc",
+      "statemachine/eventkey_test.cc",
+    ]
+    deps = [
+      "//common-mk/testrunner",
+    ]
+  }
+
+  executable("slot_test") {
+    configs += [
+      "//common-mk:test",
+      ":target_defaults",
+    ]
+    sources = [
+      "statemachine/eventkey.cc",
+      "statemachine/slot.cc",
+      "statemachine/slot_test.cc",
+    ]
+    deps = [
+      "//common-mk/testrunner",
+    ]
+  }
+
+  executable("statemachine_test") {
+    configs += [
+      "//common-mk:test",
+      ":target_defaults",
+    ]
+    sources = [
+      "statemachine/eventkey.cc",
+      "statemachine/slot.cc",
+      "statemachine/statemachine.cc",
+      "statemachine/statemachine_test.cc",
+    ]
+    deps = [
+      "//common-mk/testrunner",
+    ]
+  }
+
+  executable("evdevsource_test") {
+    configs += [
+      "//common-mk:test",
+      ":target_defaults",
+    ]
+    sources = [
+      "evdevsource.cc",
+      "evdevsource_test.cc",
+    ]
+    deps = [
+      "//common-mk/testrunner",
+    ]
+  }
+
+  executable("uinputdevice_test") {
+    configs += [
+      "//common-mk:test",
+      ":target_defaults",
+    ]
+    sources = [
+      "uinputdevice.cc",
+      "uinputdevice_test.cc",
+    ]
+    deps = [
+      "//common-mk/testrunner",
+    ]
+  }
+}
