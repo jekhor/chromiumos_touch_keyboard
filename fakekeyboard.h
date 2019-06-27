@@ -21,6 +21,16 @@
 
 namespace touch_keyboard {
 
+struct hw_config {
+  int rotation; // Hardware rotation of the touchpad, 90, 180 or 270 deg. CW
+  int res_x; // points
+  int res_y; // points
+  double width_mm; // mm
+  double height_mm; //mm
+  double left_margin_mm;
+  double top_margin_mm; // margins between physical edge and edge of keys layout
+};
+
 class Key {
  /* A class that represents a single key on the fake keyboard.
   *
@@ -119,6 +129,9 @@ struct FingerData {
   // its arrival.
   int max_pressure_;
 
+  // This value stores the maximum touch diameter reported for this contact
+  int max_touch_major_;
+
   // Here we track which key in the layout the finger first appeared on.
   int starting_key_number_;
 
@@ -153,7 +166,7 @@ class FakeKeyboard : public UinputDevice, public EvdevSource {
   * keyboard events.
   */
  public:
-  FakeKeyboard();
+  FakeKeyboard(struct hw_config &hw_config);
 
   // Use this function to actually start processing.  Start will block forever
   // and should never return, but a new keyboard device should appear and
@@ -178,9 +191,10 @@ class FakeKeyboard : public UinputDevice, public EvdevSource {
       struct timespec now,
       std::unordered_map<int, struct mtstatemachine::MtFinger> const &snapshot);
 
+  // Load layout from CSV file
   // Calling this function populates the layout_ member of a FakeKeyboard,
   // filling it with the locations of each key printed on the touch sensor.
-  void SetUpLayout();
+  bool LoadLayout(std::string const &layout_filename);
 
   // Place ev into the event queue, while maintaining chronological order of
   // the deadlines.
@@ -219,7 +233,7 @@ class FakeKeyboard : public UinputDevice, public EvdevSource {
                               struct timespec const& t2);
 
   // The touch force feedback manager used to play ff effects.
-  TouchFFManager ff_manager_;
+  TouchFFManager *ff_manager_;
 
   // This group of Key objects stores the full layout of the keyboard.
   std::vector<Key> layout_;
@@ -235,6 +249,8 @@ class FakeKeyboard : public UinputDevice, public EvdevSource {
   // This is a mapping front tracking id's (TIDs) to finger information that
   // persists over the life of a contact to track global stats and information.
   std::unordered_map<int, FingerData> finger_data_;
+
+  struct hw_config hw_config_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeKeyboard);
 };

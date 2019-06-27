@@ -4,6 +4,9 @@
 
 #include "touch_keyboard/fakekeyboard.h"
 
+#define CSV_IO_NO_THREAD
+#include "csv.h"
+
 namespace touch_keyboard {
 
 // This sets how long (in ms) to delay a key down event before sending it.  More
@@ -17,182 +20,87 @@ constexpr bool kKeyUpEvent = false;
 constexpr int kNoKey = -1;
 constexpr int kOldTID = -999;
 
-// Below are the dimensions of the Pbody touch keyboard and the key locations.
-// TODO(charliemooney): These are hardcoded constants used in SetUpLayout and
-// should be removed once that function is upgraded to load a keymap from disk.
-constexpr int kInputWidth = 2702;
-constexpr int kInputHeight = 1715;
-constexpr int kWidthMM = 266;
-constexpr int kHeightMM = 168;
-constexpr float kWidthPitch = kInputWidth / static_cast<float>(kWidthMM);
-constexpr float kHeightPitch = kInputHeight / static_cast<float>(kHeightMM);
-constexpr float kKeyWidthMM = 18.5;
-constexpr float kKeyHeightMM = 19.0;
-constexpr float kKeyWidth = kKeyWidthMM * kWidthPitch;
-constexpr float kKeyHeight = kKeyHeightMM * kHeightPitch;
-constexpr int kBottomRowYmin = 630;
-constexpr float kFnKeyWidth = 22.0 * kWidthPitch;
-constexpr float kFnKeyHeight = 12.0 * kHeightPitch;
-constexpr float kArrowKeyHeight = kKeyHeight / 2.0;
-constexpr float kWideArrowKeyWidth = 23.0 * kWidthPitch;
-constexpr float kLeftCtrlWidth = 42.0 * kWidthPitch;
-constexpr float kLeftAltWidth = 37.0 * kWidthPitch;
-constexpr float kSpaceWidth = 93.0 * kWidthPitch;
-constexpr float kShiftWidth = 41.0 * kWidthPitch;
-constexpr float kSearchWidth = 32.0 * kWidthPitch;
-constexpr float kEnterWidth = 32.0 * kWidthPitch;
-constexpr float kTabWidth = 27.0 * kWidthPitch;
-constexpr float kBackspaceWidth = 27.0 * kWidthPitch;
-
 constexpr int kMinTapPressure = 50;
 constexpr int kMaxTapPressure = 110;
 
-FakeKeyboard::FakeKeyboard() : ff_manager_(kInputWidth) {
-  SetUpLayout();
+constexpr int kMinTapTouchDiameter = 300;
+constexpr int kMaxTapTouchDiameter = 3000;
+
+FakeKeyboard::FakeKeyboard(struct hw_config &hw_config) :
+  hw_config_(hw_config) {
+  LoadLayout("layout.csv");
+
+  ff_manager_ = new TouchFFManager(hw_config_.res_x, hw_config_.res_y,
+      hw_config_.rotation);
 }
 
-void FakeKeyboard::SetUpLayout() {
-  // This function sets up the key code and their locations.
-  // TODO(charliemooney): Currently this has a layout hard-coded into it.
-  //     Obviously, that's a bad idea.  This needs to be updated to load
-  //     a layout from disk somewhere once things have stabilized a little.
-  unsigned int i;
-  int row1[] = {KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B, KEY_N, KEY_M, KEY_COMMA,
-                KEY_DOT, KEY_SLASH};
-  int row2[] = {KEY_A, KEY_S, KEY_D, KEY_F, KEY_G, KEY_H, KEY_J, KEY_K, KEY_L,
-                KEY_SEMICOLON, KEY_APOSTROPHE};
-  int row3[] = {KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_Y, KEY_U, KEY_I,
-                KEY_O, KEY_P, KEY_LEFTBRACE, KEY_RIGHTBRACE, KEY_BACKSLASH};
-  int row4[] = {KEY_GRAVE, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7,
-                KEY_8, KEY_9, KEY_0, KEY_MINUS, KEY_EQUAL};
-  int rowfn[] = {KEY_ESC, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6,
-                 KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F13};
+bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {
+  double hw_pitch_x, hw_pitch_y;
 
+  hw_pitch_x = hw_config_.res_x / hw_config_.width_mm;
+  hw_pitch_y = hw_config_.res_y / hw_config_.height_mm;
 
-  int bottom_row_ymin = kBottomRowYmin;
-  layout_.push_back(Key(KEY_LEFTCTRL,
-                        0,
-                        kLeftCtrlWidth,
-                        bottom_row_ymin,
-                        bottom_row_ymin + kKeyHeight));
-  layout_.push_back(Key(KEY_LEFTALT,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kLeftAltWidth,
-                        bottom_row_ymin,
-                        bottom_row_ymin + kKeyHeight));
-  layout_.push_back(Key(KEY_SPACE,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kSpaceWidth,
-                        bottom_row_ymin,
-                        bottom_row_ymin + kKeyHeight));
-  layout_.push_back(Key(KEY_RIGHTALT,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kKeyWidth,
-                        bottom_row_ymin,
-                        bottom_row_ymin + kKeyHeight));
-  layout_.push_back(Key(KEY_RIGHTCTRL,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kKeyWidth,
-                        bottom_row_ymin,
-                        bottom_row_ymin + kKeyHeight));
-  layout_.push_back(Key(KEY_LEFT,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kKeyWidth,
-                        bottom_row_ymin,
-                        bottom_row_ymin + kArrowKeyHeight));
-  layout_.push_back(Key(KEY_DOWN,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kWideArrowKeyWidth,
-                        bottom_row_ymin,
-                        bottom_row_ymin + kArrowKeyHeight));
-  layout_.push_back(Key(KEY_UP,
-                        layout_.back().xmin_,
-                        layout_.back().xmax_,
-                        bottom_row_ymin + kArrowKeyHeight,
-                        bottom_row_ymin + kKeyWidth));
-  layout_.push_back(Key(KEY_RIGHT,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kKeyWidth,
-                        bottom_row_ymin,
-                        bottom_row_ymin + kArrowKeyHeight));
+  LOG(DEBUG) << "pitch: " << hw_pitch_x << "x" << hw_pitch_y;
 
+  io::CSVReader<6,
+    io::trim_chars<' ', '\t'>,
+    io::no_quote_escape<';'>> l_csv(layout_filename);
 
-  int row1_ymin = bottom_row_ymin + kKeyHeight;
-  layout_.push_back(Key(KEY_LEFTSHIFT,
-                        0,
-                        kShiftWidth,
-                        row1_ymin,
-                        row1_ymin + kKeyHeight));
-  for (i = 0; i < arraysize(row1); i++) {
-    layout_.push_back(Key(row1[i],
-                          kShiftWidth + i * kKeyWidth,
-                          kShiftWidth + i * kKeyWidth + kKeyWidth,
-                          row1_ymin,
-                          row1_ymin + kKeyHeight));
-  }
-  layout_.push_back(Key(KEY_RIGHTSHIFT,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kShiftWidth,
-                        row1_ymin,
-                        row1_ymin + kKeyHeight));
+  l_csv.read_header(io::ignore_no_column, "x", "y", "width", "height",
+      "name", "code");
 
-  int row2_ymin = row1_ymin + kKeyHeight;
-  layout_.push_back(Key(KEY_LEFTMETA,
-                        0,
-                        kSearchWidth,
-                        row2_ymin,
-                        row2_ymin + kKeyHeight));
-  for (i = 0; i < arraysize(row2); i++) {
-    layout_.push_back(Key(row2[i],
-                          kSearchWidth + i * kKeyWidth,
-                          kSearchWidth + i * kKeyWidth + kKeyWidth,
-                          row2_ymin,
-                          row2_ymin + kKeyHeight));
-  }
-  layout_.push_back(Key(KEY_ENTER,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kEnterWidth,
-                        row2_ymin,
-                        row2_ymin + kKeyHeight));
+  double x, y, w, h;
+  double left_margin, top_margin;
+  std::string keyname;
+  int keycode;
 
-  int row3_ymin = row2_ymin + kKeyHeight;
-  layout_.push_back(Key(KEY_TAB,
-                        0,
-                        kTabWidth,
-                        row3_ymin,
-                        row3_ymin + kKeyHeight));
-  for (i = 0; i < arraysize(row3); i++) {
-    layout_.push_back(Key(row3[i],
-                          kTabWidth + i * kKeyWidth,
-                          kTabWidth + i * kKeyWidth + kKeyWidth,
-                          row3_ymin,
-                          row3_ymin + kKeyHeight));
+  left_margin = hw_config_.left_margin_mm;
+  top_margin = hw_config_.top_margin_mm;
+
+  while(l_csv.read_row(x, y, w, h, keyname, keycode)) {
+    LOG(INFO) << "Key " << keyname << "(" << keycode << "): " <<
+      w << "x" << h << "@(" << x << "," << y << ") mm";
+
+    int x1, x2, y1, y2;
+
+    switch (hw_config_.rotation) {
+      case 0:
+        x1 = (left_margin + x) * hw_pitch_x;
+        x2 = (left_margin + x + w) * hw_pitch_x;
+        y1 = (top_margin + y) * hw_pitch_y;
+        y2 = (top_margin + y + h) * hw_pitch_y;
+        break;
+      case 90:
+        x1 = (top_margin + y) * hw_pitch_x;
+        x2 = (top_margin + y + h) * hw_pitch_x;
+        y1 = (hw_config_.height_mm - (left_margin + x + w)) * hw_pitch_y;
+        y2 = (hw_config_.height_mm - (left_margin + x)) * hw_pitch_y;
+        break;
+      case 180:
+        x1 = (hw_config_.width_mm - (left_margin + x + w)) * hw_pitch_x;
+        x1 = (hw_config_.width_mm - (left_margin + x)) * hw_pitch_x;
+        y1 = (hw_config_.height_mm - (top_margin + y + h)) * hw_pitch_y;
+        y2 = (hw_config_.height_mm - (top_margin + y)) * hw_pitch_y;
+        break;
+      case 270:
+        x1 = (hw_config_.width_mm - (y + h + top_margin)) * hw_pitch_x;
+        x2 = (hw_config_.width_mm - (y + top_margin)) * hw_pitch_x;
+        y1 = (left_margin + x) * hw_pitch_y;
+        y2 = (left_margin + x + w) * hw_pitch_y;
+        break;
+      default:
+        LOG(ERROR) << "Rotation by " << hw_config_.rotation << " degrees is not supported";
+        return false;
+    }
+
+    LOG(INFO) << "HW coords: (" << x1 << ", " << y1 << "), (" <<
+      x2 << ", " << y2 << ")";
+
+    layout_.push_back(Key(keycode, x1, x2, y1, y2));
   }
 
-  int row4_ymin = row3_ymin + kKeyHeight;
-  for (i = 0; i < arraysize(row4); i++) {
-    layout_.push_back(Key(row4[i],
-                          i * kKeyWidth,
-                          i * kKeyWidth + kKeyWidth,
-                          row4_ymin,
-                          row4_ymin + kKeyHeight));
-  }
-  layout_.push_back(Key(KEY_BACKSPACE,
-                        layout_.back().xmax_,
-                        layout_.back().xmax_ + kBackspaceWidth,
-                        row4_ymin,
-                        row4_ymin + kKeyHeight));
-
-  int rowfn_ymin = row4_ymin + kKeyHeight;
-  for (i = 0; i < arraysize(rowfn); i++) {
-    layout_.push_back(Key(rowfn[i],
-                          i * kFnKeyWidth,
-                          i * kFnKeyWidth + kFnKeyWidth,
-                          rowfn_ymin,
-                          rowfn_ymin + kFnKeyHeight));
-  }
+  return true;
 }
-
 
 void FakeKeyboard::EnableKeyboardEvents() const {
   // Enable key events in general for output.
@@ -223,6 +131,7 @@ bool FakeKeyboard::TimespecIsLater(struct timespec const& t1,
 int FakeKeyboard::GenerateEventForArrivingFinger(
     struct timespec now,
     struct mtstatemachine::MtFinger const &finger, int tid) {
+
   for (unsigned int key_num = 0; key_num < layout_.size(); key_num++) {
     if (layout_[key_num].Contains(finger.x, finger.y)) {
       Event ev(layout_[key_num].event_code_, kKeyDownEvent,
@@ -286,6 +195,7 @@ bool FakeKeyboard::StillOnFirstKey(
 }
 
 void FakeKeyboard::RejectFinger(int tid, RejectionStatus reason) {
+  LOG(DEBUG) << "Reject finger, reason " << static_cast<int>(reason);
   // First, mark the finger's FingerData as rejected.
   finger_data_[tid].rejection_status_ = reason;
 
@@ -319,6 +229,7 @@ void FakeKeyboard::ProcessIncomingSnapshot(
       FingerData data;
       data.arrival_time_ = now;
       data.max_pressure_ = finger.p;
+      data.max_touch_major_ = finger.touch_major;
       data.starting_key_number_ = ev_code_;
       data.down_sent_ = false;
       data.rejection_status_ = RejectionStatus::kNotRejectedYet;
@@ -326,7 +237,7 @@ void FakeKeyboard::ProcessIncomingSnapshot(
       if (ev_code_ == kNoKey) {
         data.rejection_status_ = RejectionStatus::kRejectTouchdownOffKey;
       } else {
-        ff_manager_.EventTriggered(TouchKeyboardEvent::FingerDown, finger.x);
+        ff_manager_->EventTriggered(TouchKeyboardEvent::FingerDown, finger.x, finger.y);
       }
 
       // TODO(charliemooney): Add more data here that can be used for
@@ -338,6 +249,10 @@ void FakeKeyboard::ProcessIncomingSnapshot(
       // First, Check if the maxium pressure has changed.
       data_for_tid_it->second.max_pressure_ =
           std::max(data_for_tid_it->second.max_pressure_, finger.p);
+
+      // The same for touch contact diameter
+      data_for_tid_it->second.max_touch_major_ =
+          std::max(data_for_tid_it->second.max_touch_major_, finger.touch_major);
 
       // Check if the finger has left the key it started on
       if (!StillOnFirstKey(finger, data_for_tid_it->second)) {
@@ -449,16 +364,28 @@ void FakeKeyboard::Consume() {
         // off to the OS.  Currently there is only a pressure check here, but
         // more could easily be added later.
 
-        // This checks if the maximum pressure a finger reported is within
-        // range.  An exception is made for the spacebar since it is often
-        // pressed by a user's thumb, which may have unusually high pressure.
-        if (it->second.max_pressure_ < kMinTapPressure ||
+        if (it->second.max_pressure_ != -1) {
+          // This checks if the maximum pressure a finger reported is within
+          // range.  An exception is made for the spacebar since it is often
+          // pressed by a user's thumb, which may have unusually high pressure.
+          if (it->second.max_pressure_ < kMinTapPressure ||
+              (layout_[it->second.starting_key_number_].event_code_ !=
+               KEY_SPACE && it->second.max_pressure_ > kMaxTapPressure)) {
+            LOG(INFO) << "Tap rejected!  Pressure of " <<
+              it->second.max_pressure_ << " is out of range " <<
+              kMinTapPressure << "->" << kMaxTapPressure;
+            continue;
+          }
+        } else {
+          if (it->second.max_touch_major_ < kMinTapTouchDiameter ||
             (layout_[it->second.starting_key_number_].event_code_ !=
-             KEY_SPACE && it->second.max_pressure_ > kMaxTapPressure)) {
-          LOG(INFO) << "Tap rejected!  Pressure of " <<
-                    it->second.max_pressure_ << " is out of range " <<
-                    kMinTapPressure << "->" << kMaxTapPressure;
-          continue;
+             KEY_SPACE && it->second.max_touch_major_ > kMaxTapTouchDiameter)) {
+            LOG(INFO) << "Tap rejected!  Diameter of " <<
+              it->second.max_touch_major_ << " is out of range " <<
+              kMinTapTouchDiameter << "->" << kMaxTapTouchDiameter;
+            continue;
+          }
+
         }
       } else {
         // The finger has already left -- that's OK as long as it is
@@ -471,6 +398,7 @@ void FakeKeyboard::Consume() {
         }
       }
 
+      LOG(DEBUG) << "Event: EV_KEY, code " << next_event.ev_code_ << " down: " << next_event.is_down_;
       // Actually send the event and update the fingerdata if applicable.
       SendEvent(EV_KEY, next_event.ev_code_, next_event.is_down_ ? 1 : 0);
       needs_syn = true;
@@ -492,7 +420,9 @@ void FakeKeyboard::Consume() {
 void FakeKeyboard::Start(std::string const &source_device_path,
                          std::string const &keyboard_device_name) {
   // Do all the set up steps.
-  OpenSourceDevice(source_device_path);
+  if (!OpenSourceDevice(source_device_path))
+    return;
+
   CreateUinputFD();
   EnableKeyboardEvents();
   FinalizeUinputCreation(keyboard_device_name);

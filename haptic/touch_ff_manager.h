@@ -31,13 +31,13 @@ class TouchFFManager {
  public:
   // Init TouchFFManager with max_x, where max_x is the max possible x
   // of the touch surface.
-  explicit TouchFFManager(int max_x);
+  explicit TouchFFManager(int max_x, int max_y, int rotation);
 
   // Inform the TouchFFManager that a particular kind of keyboard event as
   // happened at which x location. This may or may not trigger haptic feedback.
   // X value should be between 0 and max_x. X = 0 means the left side of the
   // touch surface.
-  void EventTriggered(TouchKeyboardEvent event, int x);
+  void EventTriggered(TouchKeyboardEvent event, int x, int y);
 
   // Register force feeback effect for the touch keyboard event. When the event
   // is triggered later, the effect will be played.
@@ -67,6 +67,9 @@ class TouchFFManager {
 
   // This is the max x axis value of the touchpad.
   int touch_max_x_;
+
+  // Touchscreen rotation angle, CW
+  int touch_rotation_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchFFManager);
 };

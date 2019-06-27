@@ -9,7 +9,7 @@ namespace touch_keyboard {
 bool EvdevSource::OpenSourceDevice(std::string const &source_device_path) {
   source_fd_ = syscall_handler_->open(source_device_path.c_str(), O_RDONLY);
   if (source_fd_ < 0) {
-    PLOG(ERROR) << "Failed to open() source device. (" << source_fd_ << ")";
+    PLOG(ERROR) << "Failed to open() source device " << source_device_path << ". (" << source_fd_ << ")";
     return false;
   }
   return true;

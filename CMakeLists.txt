@@ -5,6 +5,8 @@ project(chromiumos_touch_keyboard)
 include_directories("${PROJECT_BINARY_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra -pedantic")
+
 add_executable(touch_keyboard_handler
 	main.cc
 	evdevsource.cc

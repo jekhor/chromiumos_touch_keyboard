@@ -6,12 +6,50 @@
 
 namespace touch_keyboard {
 
-FakeTouchpad::FakeTouchpad(int xmin, int xmax, int ymin, int ymax,
-                           unsigned char axis_inversion_flags) :
-             xmin_(xmin), xmax_(xmax), ymin_(ymin), ymax_(ymax) {
-  invertx_ = static_cast<bool>(axis_inversion_flags & kInvertX);
-  inverty_ = static_cast<bool>(axis_inversion_flags & kInvertY);
+FakeTouchpad::FakeTouchpad(double xmin_mm, double xmax_mm,
+                           double ymin_mm, double ymax_mm,
+                           struct hw_config &hw_config) :
+  hw_config_(hw_config) {
 
+  double hw_pitch_x = hw_config_.res_x / hw_config_.width_mm;
+  double hw_pitch_y = hw_config_.res_y / hw_config_.height_mm;
+  double left_margin, top_margin;
+
+  left_margin = hw_config_.left_margin_mm;
+  top_margin = hw_config_.top_margin_mm;
+  
+  switch (hw_config_.rotation) {
+    case 0:
+      xmin_ = (xmin_mm + left_margin) * hw_pitch_x;
+      xmax_ = (xmax_mm + left_margin) * hw_pitch_x;
+      ymin_ = (ymin_mm + top_margin) * hw_pitch_y;
+      ymax_ = (ymax_mm + top_margin) * hw_pitch_y;
+      break;
+    case 90:
+      xmin_ = (top_margin + ymin_mm) * hw_pitch_x;
+      xmax_ = (top_margin + ymax_mm) * hw_pitch_x;
+      ymin_ = (hw_config_.height_mm - (left_margin + xmax_mm)) * hw_pitch_y;
+      ymax_ = (hw_config_.height_mm - (left_margin + xmin_mm)) * hw_pitch_y;
+      break;
+    case 180:
+      xmin_ = (hw_config_.width_mm - (xmax_mm + left_margin)) * hw_pitch_x;
+      xmax_ = (hw_config_.width_mm - (xmin_mm + left_margin)) * hw_pitch_x;
+      ymin_ = (hw_config_.height_mm - (ymax_mm + top_margin)) * hw_pitch_y;
+      ymax_ = (hw_config_.height_mm - (ymin_mm + top_margin)) * hw_pitch_y;
+      break;
+    case 270:
+      xmin_ = (hw_config_.width_mm - (ymax_mm + top_margin)) * hw_pitch_x;
+      xmax_ = (hw_config_.width_mm - (ymin_mm + top_margin)) * hw_pitch_x;
+      ymin_ = (left_margin + xmin_mm) * hw_pitch_y;
+      ymax_ = (left_margin + xmax_mm) * hw_pitch_y;
+      break;
+    default:
+      LOG(ERROR) << "Invalid rotation value: " << hw_config_.rotation;
+      throw;
+  }
+
+  LOG(INFO) << "FakeTouchpad geometry: (" << xmin_ << ", " << xmax_ <<
+                                    "), (" << ymin_ << ", " << ymax_ << ")";
   for (int i = 0; i < mtstatemachine::kNumSlots; i++) {
     slot_memberships_.push_back(false);
   }
@@ -19,7 +57,8 @@ FakeTouchpad::FakeTouchpad(int xmin, int xmax, int ymin, int ymax,
 
 void FakeTouchpad::Start(std::string const &source_device_path,
                          std::string const &touchpad_device_name) {
-  OpenSourceDevice(source_device_path);
+  if (!OpenSourceDevice(source_device_path))
+    return;
   CreateUinputFD();
 
   // Enable the few button events that touchpads need.
@@ -30,8 +69,25 @@ void FakeTouchpad::Start(std::string const &source_device_path,
   EnableKeyEvent(BTN_TOOL_TRIPLETAP);
   EnableKeyEvent(BTN_TOOL_QUADTAP);
 
+  int w, h;
+
+  switch (hw_config_.rotation) {
+    case 0:
+    case 180:
+      w = xmax_ - xmin_;
+      h = ymax_ - ymin_;
+      break;
+    case 90:
+    case 270:
+      w = ymax_ - ymin_;
+      h = xmax_ - xmin_;
+      break;
+    default:
+      break;
+  }
+
   // Duplicate the ABS events from the source device.
-  CopyABSOutputEvents(source_fd_, xmax_ - xmin_, ymax_ - ymin_);
+  CopyABSOutputEvents(source_fd_, w, h);
 
   // Finally, tell kernel to create the new fake touchpad's uinput device.
   FinalizeUinputCreation(touchpad_device_name);
@@ -98,6 +154,7 @@ bool FakeTouchpad::PassEventsThrough(mtstatemachine::Slot const &slot) const {
   for (it = slot.begin(); it != slot.end(); it++) {
     mtstatemachine::EventKey slot_event_key = it->first;
     int value = it->second;
+    int code = slot_event_key.code_;
 
     // If the value is for an unsupported event_key, skip it.
     if (!slot_event_key.IsSupportedForTouchpads())
@@ -112,18 +169,41 @@ bool FakeTouchpad::PassEventsThrough(mtstatemachine::Slot const &slot) const {
     // invert any axes that were set to be inverted at creation.
     if (slot_event_key.IsX()) {
       value -= xmin_;
-      if (invertx_) {
-        value = (xmax_ - xmin_) - value;
+
+      switch (hw_config_.rotation) {
+        case 0:
+          break; // no transform
+        case 90:
+          code = ABS_MT_POSITION_Y;
+          break;
+        case 180:
+          value = (xmax_ - xmin_) - value;
+          break;
+        case 270:
+          code = ABS_MT_POSITION_Y;
+          value = (xmax_ - xmin_) - value;
+          break;
       }
     } else if (slot_event_key.IsY()) {
       value -= ymin_;
-      if (inverty_) {
-        value = (ymax_ - ymin_) - value;
+      switch (hw_config_.rotation) {
+        case 0:
+          break; // no transform
+        case 90:
+          code = ABS_MT_POSITION_X;
+          value = (ymax_ - ymin_) - value;
+          break;
+        case 180:
+          value = (ymax_ - ymin_) - value;
+          break;
+        case 270:
+          code = ABS_MT_POSITION_X;
+          break;
       }
     }
 
     // Push an event that sets this value into the region.
-    SendEvent(slot_event_key.type_, slot_event_key.code_, value);
+    SendEvent(slot_event_key.type_, code, value);
   }
 
   return is_valid;

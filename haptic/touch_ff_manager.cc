@@ -19,8 +19,22 @@ const char kRightVibratorPath[] = "/dev/right_vibrator";
 
 namespace touch_keyboard {
 
-TouchFFManager::TouchFFManager(int max_x) :
-  touch_max_x_(max_x) {
+TouchFFManager::TouchFFManager(int max_x, int max_y, int rotation) {
+    switch (rotation) {
+      case 0:
+      case 180:
+        touch_max_x_ = max_x;
+        break;
+      case 90:
+      case 270:
+        touch_max_x_ = max_y;
+        break;
+      default:
+        LOG(ERROR) << "Invalid rotation angle: " << rotation;
+    }
+
+    touch_rotation_ = rotation;
+
     if (!left_driver_.Init(kLeftVibratorPath)) {
       LOG(ERROR) << "Cannot find left motor";
     }
@@ -44,11 +58,30 @@ void TouchFFManager::RegisterFF(TouchKeyboardEvent event,
   right_driver_fflib_[event] = tmp_event_id;
 }
 
-void TouchFFManager::EventTriggered(TouchKeyboardEvent event, int x) {
+void TouchFFManager::EventTriggered(TouchKeyboardEvent event, int x, int y) {
   // Play ff effects based on the location of the event. Currently, we drive
   // left OR right motor depend on the event possition. When the event is on the
   // left half of touch surface, only the left vibrator will run.
-  if (x < touch_max_x_ / 2) {
+  int val;
+
+  switch (touch_rotation_) {
+    case 0:
+      val = x;
+      break;
+    case 90:
+      val = touch_max_x_ - y;
+      break;
+    case 180:
+      val = touch_max_x_ - x;
+      break;
+    case 270:
+      val = y;
+      break;
+    default:
+      val = x;
+  }
+
+  if (val < touch_max_x_ / 2) {
     PlayEffectOfEvent(event, &left_driver_, &left_driver_fflib_);
   } else {
     PlayEffectOfEvent(event, &right_driver_, &right_driver_fflib_);

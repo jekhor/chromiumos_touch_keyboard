@@ -11,11 +11,9 @@
 #include "touch_keyboard/evdevsource.h"
 #include "touch_keyboard/statemachine/statemachine.h"
 #include "touch_keyboard/uinputdevice.h"
+#include "touch_keyboard/fakekeyboard.h"
 
 namespace touch_keyboard {
-
-constexpr int kInvertY = 0x01;
-constexpr int kInvertX = 0x02;
 
 class FakeTouchpad : public UinputDevice, public EvdevSource {
  /* Generate a "fake" touchpad device that pulls it's touch events from a sub-
@@ -31,8 +29,9 @@ class FakeTouchpad : public UinputDevice, public EvdevSource {
   * illusion of a normal touchpad.
   */
  public:
-  FakeTouchpad(int xmin, int xmax, int ymin, int ymax,
-               unsigned char axis_inversion_flags);
+   FakeTouchpad(double xmin_mm, double xmax_mm,
+                           double ymin_mm, double ymax_mm,
+                           struct hw_config &hw_config);
 
   void Start(std::string const &source_device_path,
              std::string const &touchpad_device_name);
@@ -62,8 +61,7 @@ class FakeTouchpad : public UinputDevice, public EvdevSource {
   // the "touchpad" area on the source input device.
   int xmin_, xmax_, ymin_, ymax_;
 
-  // These flags indicate which, if any, axes should be inverted.
-  bool invertx_, inverty_;
+  struct hw_config hw_config_;
 
   // Every FakeTouchpad needs a state machine to interpret incoming events, it
   // is defined and created here as a member of each object.
