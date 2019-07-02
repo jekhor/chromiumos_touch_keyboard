@@ -63,7 +63,7 @@ const double tp_y2_mm = 133;
 int main() {
   struct touch_keyboard::hw_config hw_config;
 
-  SetMinimumLogSeverity(::android::base::DEBUG);
+//  SetMinimumLogSeverity(::android::base::DEBUG);
   LOG(INFO) << "Starting touch_keyboard_handler";
   
   LoadHWConfig("touch-hw.csv", hw_config);
