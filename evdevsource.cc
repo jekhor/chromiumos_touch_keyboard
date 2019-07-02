@@ -37,6 +37,9 @@ bool EvdevSource::GetNextEvent(int timeout_ms, struct input_event *ev) const {
   if (num_bytes_read != sizeof(*ev)) {
     PLOG(ERROR) << "ERROR: A read failed to read an entire event. Only read " <<
                    num_bytes_read << " of " << sizeof(*ev) << "expected bytes.";
+    if (num_bytes_read == -1) {
+	    throw "Evdev read() failed";
+    }
     return false;
   }
   return true;
