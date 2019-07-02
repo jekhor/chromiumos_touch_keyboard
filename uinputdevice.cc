@@ -89,7 +89,8 @@ bool UinputDevice::EnableAbsEvent(int ev_code) const {
 }
 
 bool UinputDevice::CopyABSOutputEvents(int source_evdev_fd,
-                                       int width, int height) const {
+                                       int width, int height,
+				       int xres, int yres) const {
   // Configure this region's uinput device to report the correct kinds of
   // events by copying the events that are reported by the input device
   // who's file descriptor is passed as a reference.
@@ -140,9 +141,11 @@ bool UinputDevice::CopyABSOutputEvents(int source_evdev_fd,
     if (ev_code == ABS_MT_POSITION_X || ev_code == ABS_X) {
       abs_setup.absinfo.minimum = 0;
       abs_setup.absinfo.maximum = width;
+      abs_setup.absinfo.resolution = xres;
     } else if (ev_code == ABS_MT_POSITION_Y || ev_code == ABS_Y) {
       abs_setup.absinfo.minimum = 0;
       abs_setup.absinfo.maximum = height;
+      abs_setup.absinfo.resolution = yres;
     }
     error = syscall_handler_->ioctl(uinput_fd_, UI_ABS_SETUP, &abs_setup);
     if (error) {

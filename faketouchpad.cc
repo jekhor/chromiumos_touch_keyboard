@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <math.h>
+
 #include "touch_keyboard/faketouchpad.h"
 
 namespace touch_keyboard {
@@ -17,7 +19,10 @@ FakeTouchpad::FakeTouchpad(double xmin_mm, double xmax_mm,
 
   left_margin = hw_config_.left_margin_mm;
   top_margin = hw_config_.top_margin_mm;
-  
+
+  width_mm_ = xmax_mm - xmin_mm;
+  height_mm_ = ymax_mm - ymin_mm;
+
   switch (hw_config_.rotation) {
     case 0:
       xmin_ = (xmin_mm + left_margin) * hw_pitch_x;
@@ -70,6 +75,7 @@ void FakeTouchpad::Start(std::string const &source_device_path,
   EnableKeyEvent(BTN_TOOL_QUADTAP);
 
   int w, h;
+  int xres, yres;
 
   switch (hw_config_.rotation) {
     case 0:
@@ -86,8 +92,11 @@ void FakeTouchpad::Start(std::string const &source_device_path,
       break;
   }
 
+  xres = round(w / width_mm_);
+  yres = round(h / height_mm_);
+
   // Duplicate the ABS events from the source device.
-  CopyABSOutputEvents(source_fd_, w, h);
+  CopyABSOutputEvents(source_fd_, w, h, xres, yres);
 
   // Finally, tell kernel to create the new fake touchpad's uinput device.
   FinalizeUinputCreation(touchpad_device_name);

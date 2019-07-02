@@ -66,7 +66,8 @@ class UinputDevice {
 
   // Clone the EV_ABS event capability of a given evdev device.  The width and
   // height are used to setup the ranges of X and Y coordinates.
-  bool CopyABSOutputEvents(int source_evdev_fd, int width, int height) const;
+  bool CopyABSOutputEvents(int source_evdev_fd, int width, int height,
+                           int xres, int yres) const;
 
   // Wrap up creation once all your events are enabled, and give it a name.
   // Once this is called the device is ready to start sending events out.

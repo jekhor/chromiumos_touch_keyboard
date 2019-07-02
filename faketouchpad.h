@@ -61,6 +61,9 @@ class FakeTouchpad : public UinputDevice, public EvdevSource {
   // the "touchpad" area on the source input device.
   int xmin_, xmax_, ymin_, ymax_;
 
+  // 'Real world' touchpad width and height in mm
+  double width_mm_, height_mm_;
+
   struct hw_config hw_config_;
 
   // Every FakeTouchpad needs a state machine to interpret incoming events, it
