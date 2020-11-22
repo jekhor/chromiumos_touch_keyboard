@@ -1,5 +1,8 @@
 # Touch Keyboard
 
+This is fork of ChromiumOS touch keyboard driver found at
+https://chromium.googlesource.com/chromiumos/platform2/+/19effa94d56d31397a55292771c8ea196f419f1e/touch_keyboard/
+
 ## Overview
 This package includes the software required for enabling a low-level
 touch-based keyboard and touchpad.  It includes utilities for reading
