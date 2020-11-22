@@ -61,7 +61,7 @@ bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {
     LOG(INFO) << "Key " << keyname << "(" << keycode << "): " <<
       w << "x" << h << "@(" << x << "," << y << ") mm";
 
-    int x1, x2, y1, y2;
+    int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 
     switch (hw_config_.rotation) {
       case 0:

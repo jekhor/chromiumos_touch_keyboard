@@ -74,7 +74,7 @@ void FakeTouchpad::Start(std::string const &source_device_path,
   EnableKeyEvent(BTN_TOOL_TRIPLETAP);
   EnableKeyEvent(BTN_TOOL_QUADTAP);
 
-  int w, h;
+  int w = 0, h = 0;
   int xres, yres;
 
   switch (hw_config_.rotation) {
