@@ -42,3 +42,25 @@ add_custom_target(make_headers_links
 add_dependencies(touch_keyboard_handler make_headers_links)
 
 target_link_libraries(touch_keyboard_handler ${ANDROID_BASE_LIB})
+
+
+include(GNUInstallDirs)
+
+set(SYSTEMD_UNIT_DIR "/lib/systemd/system/")
+set(UDEV_DIR "/lib/udev/")
+
+install(TARGETS touch_keyboard_handler
+	DESTINATION sbin)
+
+install(FILES layout.csv touch-hw.csv
+	DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/touch_keyboard)
+
+install(FILES 60-touch-keyboard.rules
+	DESTINATION ${UDEV_DIR}/rules.d)
+
+install(FILES 61-evdev-yogabook.hwdb
+	DESTINATION ${UDEV_DIR}/hwdb.d)
+
+install(FILES touch-keyboard-handler.service
+	DESTINATION ${SYSTEMD_UNIT_DIR})
+
