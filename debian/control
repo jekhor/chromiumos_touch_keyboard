@@ -1,0 +1,20 @@
+Source: touch-keyboard
+Section: misc
+Priority: optional
+Maintainer: Yauhen Kharuzhy <jekhor@gmail.com>
+Build-Depends: cmake, android-libbase-dev, debhelper-compat (= 13)
+Standards-Version: 4.5.0
+#Vcs-Browser: https://salsa.debian.org/debian/touch-keyboard
+#Vcs-Git: https://salsa.debian.org/debian/touch-keyboard.git
+Rules-Requires-Root: no
+
+Package: touch-keyboard
+Architecture: any
+Depends: android-libbase, ${shlibs:Depends}, ${misc:Depends}
+Description: Userspace driver for touchpad-based keyboard
+ The userspace driver to support touch keyboard based on touchpad. Such
+ keyboard may be found in some tablets (Lenovo Yoga Book YB1-X9* for example).
+ .
+ This package is fork of touch keyboard driver from ChromiumOS. It contains
+ keyboard geometry description for Lenovo Yoga Book but can be reconfigured for
+ any touch keyboad.
