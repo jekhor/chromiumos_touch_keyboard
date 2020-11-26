@@ -6,6 +6,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra -pedantic")
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_executable(touch_keyboard_handler
 	main.cc
