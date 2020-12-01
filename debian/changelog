@@ -1,3 +1,12 @@
+touch-keyboard (1.1) unstable; urgency=medium
+
+  * Implement Fn modifier key emulation
+  * haptic/ff_driver: Don't flood log if no haptic driver found
+  * Add lintian overrides to ignore custom rpath in the binary
+  * Add script to reload module at resume 
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Wed, 02 Dec 2020 01:51:21 +0300
+
 touch-keyboard (1.0) unstable; urgency=medium
 
   * Initial Release.
