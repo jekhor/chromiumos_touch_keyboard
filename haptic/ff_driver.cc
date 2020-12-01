@@ -43,7 +43,7 @@ bool FFDriver::Init(const std::string& device_path) {
 
 int FFDriver::UploadEffect(float magnitude, int time_ms) {
   if (fd_ == -1) {
-    PLOG(ERROR) << "Cannot upload effect cause FFDriver is not inited";
+    PLOG(DEBUG) << "Cannot upload effect cause FFDriver is not initialized";
     return -1;
   }
   struct ff_effect effect;
@@ -66,7 +66,7 @@ int FFDriver::UploadEffect(float magnitude, int time_ms) {
 
 bool FFDriver::PlayEffect(int id) {
   if (fd_ == -1) {
-    PLOG(ERROR) << "Cannot play effect cause FFDriver is not inited";
+    PLOG(DEBUG) << "Cannot play effect cause FFDriver is not initialized";
     return false;
   }
 
