@@ -28,6 +28,9 @@ constexpr int kMaxTapTouchDiameter = 3000;
 
 FakeKeyboard::FakeKeyboard(struct hw_config &hw_config) :
   hw_config_(hw_config) {
+
+  fn_key_pressed_ = false;
+
   LoadLayout("layout.csv");
 
   ff_manager_ = new TouchFFManager(hw_config_.res_x, hw_config_.res_y,
@@ -42,23 +45,26 @@ bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {
 
   LOG(DEBUG) << "pitch: " << hw_pitch_x << "x" << hw_pitch_y;
 
-  io::CSVReader<6,
+  io::CSVReader<8,
     io::trim_chars<' ', '\t'>,
     io::no_quote_escape<';'>> l_csv(layout_filename);
 
-  l_csv.read_header(io::ignore_no_column, "x", "y", "width", "height",
-      "name", "code");
+  l_csv.read_header(io::ignore_missing_column, "x", "y", "width", "height",
+      "name", "code", "name_fn", "code_fn");
 
   double x, y, w, h;
   double left_margin, top_margin;
   std::string keyname;
-  int keycode;
+  std::string keyname_fn = "";
+  int keycode = 0;
+  int keycode_fn = 0;
 
   left_margin = hw_config_.left_margin_mm;
   top_margin = hw_config_.top_margin_mm;
 
-  while(l_csv.read_row(x, y, w, h, keyname, keycode)) {
-    LOG(INFO) << "Key " << keyname << "(" << keycode << "): " <<
+  while(l_csv.read_row(x, y, w, h, keyname, keycode, keyname_fn, keycode_fn)) {
+    LOG(INFO) << "Key " << keyname << "(" << keycode << ") | " <<
+      keyname_fn << " (" << keycode_fn << "): " <<
       w << "x" << h << "@(" << x << "," << y << ") mm";
 
     int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
@@ -96,7 +102,7 @@ bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {
     LOG(INFO) << "HW coords: (" << x1 << ", " << y1 << "), (" <<
       x2 << ", " << y2 << ")";
 
-    layout_.push_back(Key(keycode, x1, x2, y1, y2));
+    layout_.push_back(Key(keycode, keycode_fn, x1, x2, y1, y2));
   }
 
   return true;
@@ -108,6 +114,8 @@ void FakeKeyboard::EnableKeyboardEvents() const {
   // Enable each specific key code found in the layout.
   for (unsigned int i = 0; i < layout_.size(); i++) {
     EnableKeyEvent(layout_[i].event_code_);
+    if (layout_[i].event_code_fn_)
+      EnableKeyEvent(layout_[i].event_code_fn_);
   }
 }
 
@@ -130,11 +138,20 @@ bool FakeKeyboard::TimespecIsLater(struct timespec const& t1,
 
 int FakeKeyboard::GenerateEventForArrivingFinger(
     struct timespec now,
-    struct mtstatemachine::MtFinger const &finger, int tid) {
+    struct mtstatemachine::MtFinger const &finger, int tid, int *event_code) {
 
   for (unsigned int key_num = 0; key_num < layout_.size(); key_num++) {
     if (layout_[key_num].Contains(finger.x, finger.y)) {
-      Event ev(layout_[key_num].event_code_, kKeyDownEvent,
+
+      if (fn_key_pressed_ && layout_[key_num].event_code_fn_)
+        *event_code = layout_[key_num].event_code_fn_;
+      else
+        *event_code = layout_[key_num].event_code_;
+
+      LOG(DEBUG) << "fn_key_pressed_: " << fn_key_pressed_ << ", event_code: " <<
+        *event_code;
+
+      Event ev(*event_code, kKeyDownEvent,
                AddMsToTimespec(now, kEventDelayMS), tid);
       EnqueueEvent(ev);
       return key_num;
@@ -171,7 +188,9 @@ void FakeKeyboard::HandleLeavingFinger(int tid, FingerData finger,
   // finger, or have just marked in guaranteed.  Either way we have to enqueue
   // a guaranteed up event now if there isn't one already.
   if (!up_event_guaranteed) {
-    EnqueueKeyUpEvent(layout_[finger.starting_key_number_].event_code_, now);
+    EnqueueKeyUpEvent(finger.event_code_, now);
+    if (finger.event_code_ == KEY_FN)
+      fn_key_pressed_ = false;
   }
 }
 
@@ -221,7 +240,8 @@ void FakeKeyboard::ProcessIncomingSnapshot(
     std::unordered_map<int, FingerData>::iterator data_for_tid_it;
     data_for_tid_it = finger_data_.find(tid);
     if (data_for_tid_it == finger_data_.end()) {
-      int ev_code_ = GenerateEventForArrivingFinger(now, finger, tid);
+      int event_code = 0;
+      int key = GenerateEventForArrivingFinger(now, finger, tid, &event_code);
 
       // If this is a newly arriving finger, make a new entry for it and fill
       // out all the starting data we have.  In some cases, this may invalidate
@@ -230,11 +250,15 @@ void FakeKeyboard::ProcessIncomingSnapshot(
       data.arrival_time_ = now;
       data.max_pressure_ = finger.p;
       data.max_touch_major_ = finger.touch_major;
-      data.starting_key_number_ = ev_code_;
+      data.starting_key_number_ = key;
+      data.event_code_ = event_code;
       data.down_sent_ = false;
       data.rejection_status_ = RejectionStatus::kNotRejectedYet;
 
-      if (ev_code_ == kNoKey) {
+      if (event_code == KEY_FN)
+        fn_key_pressed_ = true;
+
+      if (key == kNoKey) {
         data.rejection_status_ = RejectionStatus::kRejectTouchdownOffKey;
       } else {
         ff_manager_->EventTriggered(TouchKeyboardEvent::FingerDown, finger.x, finger.y);
@@ -261,8 +285,10 @@ void FakeKeyboard::ProcessIncomingSnapshot(
         if (data_for_tid_it->second.down_sent_) {
           // Send a KeyUp event to cancel any held-down buttons.
           EnqueueKeyUpEvent(
-              layout_[data_for_tid_it->second.starting_key_number_].event_code_,
-              now);
+              data_for_tid_it->second.event_code_, now);
+
+          if (data_for_tid_it->second.event_code_ == KEY_FN)
+            fn_key_pressed_ = false;
         }
       }
 

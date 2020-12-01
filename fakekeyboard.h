@@ -40,9 +40,11 @@ class Key {
   * these Key objects.
   */
  public:
-  Key(int event_code, int xmin, int xmax, int ymin, int ymax) :
-      event_code_(event_code), xmin_(xmin), xmax_(xmax), ymin_(ymin),
-      ymax_(ymax) {}
+  Key(int event_code, int event_code_fn,
+	int xmin, int xmax, int ymin, int ymax) :
+	  event_code_(event_code), event_code_fn_(event_code_fn),
+	  xmin_(xmin), xmax_(xmax), ymin_(ymin),
+	  ymax_(ymax) {}
 
   // Check if the point (x, y) is contained within this key.
   bool Contains(int x, int y) const {
@@ -52,6 +54,9 @@ class Key {
   // This defines which event code to emit when this key is pressed.
   // Essentially this specifies which key it is. (eg: KEY_A, KEY_BACKSPACE, etc)
   int event_code_;
+
+  // The same for Fn modifier key pressed
+  int event_code_fn_;
 
   // The range of x and y values that are contained within the key.
   int xmin_, xmax_;
@@ -135,6 +140,8 @@ struct FingerData {
   // Here we track which key in the layout the finger first appeared on.
   int starting_key_number_;
 
+  int event_code_;
+
   // This Boolean indicates if a "key down" event has already been sent because
   // of something this finger did, and as a result a "key up" event must be sent
   // eventually.
@@ -214,7 +221,8 @@ class FakeKeyboard : public UinputDevice, public EvdevSource {
   // When a finger first arrives on the sensor some special setup is required.
   int GenerateEventForArrivingFinger(
       struct timespec now,
-      struct mtstatemachine::MtFinger const &finger, int tid);
+      struct mtstatemachine::MtFinger const &finger, int tid,
+      int *event_code);
 
   // Confirm that a finger's correct position is still within the boundaries of
   // the key that it initially arrived on.
@@ -249,6 +257,8 @@ class FakeKeyboard : public UinputDevice, public EvdevSource {
   // This is a mapping front tracking id's (TIDs) to finger information that
   // persists over the life of a contact to track global stats and information.
   std::unordered_map<int, FingerData> finger_data_;
+
+  bool fn_key_pressed_;
 
   struct hw_config hw_config_;
 
