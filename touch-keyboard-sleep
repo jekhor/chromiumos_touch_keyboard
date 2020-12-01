@@ -5,6 +5,7 @@ case "$1" in
 		;;
 	post)
 		rmmod goodix
+		sleep 3
 		modprobe goodix
 		;;
 esac
