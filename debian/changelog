@@ -1,5 +1,6 @@
 touch-keyboard (1.2) unstable; urgency=medium
 
+  * Remove PWM settings (handled by kernel driver now)
   * Update README with build instructions
   * Remove obsoleted yogabook-specific touch-keyboard-sleep hook
   * Decrease default verbosity level
