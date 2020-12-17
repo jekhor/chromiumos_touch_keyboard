@@ -1,3 +1,12 @@
+touch-keyboard (1.2) unstable; urgency=medium
+
+  * Update README with build instructions
+  * Remove obsoleted yogabook-specific touch-keyboard-sleep hook
+  * Decrease default verbosity level
+  * Handle exception and exit with failure
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Fri, 18 Dec 2020 01:43:47 +0300
+
 touch-keyboard (1.1) unstable; urgency=medium
 
   * Implement Fn modifier key emulation
