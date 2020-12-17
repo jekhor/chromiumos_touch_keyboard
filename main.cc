@@ -4,6 +4,8 @@
 
 #include <base/logging.h>
 #include <sys/wait.h>
+#include <unistd.h>
+#include <iostream>
 
 #define CSV_IO_NO_THREAD
 #include "csv.h"
@@ -60,12 +62,30 @@ const double tp_x2_mm = 155;
 const double tp_y1_mm = 98.5;
 const double tp_y2_mm = 133;
 
-int main() {
+int main(int argc, char *argv[]) {
   struct touch_keyboard::hw_config hw_config;
+  int debug_level = 0;
+  int opt;
 
-//  SetMinimumLogSeverity(::android::base::DEBUG);
+  while ((opt = getopt(argc, argv, "hd")) != -1) {
+    switch (opt) {
+      case 'h':
+        std::cerr << "Usage: touch_keyboard_handler [-h] [-d]\n";
+        return 0;
+      case 'd':
+        debug_level++;
+        break;
+      default:
+        std::cerr << "Unknown option " << (char)opt << "\n";
+        exit(EXIT_FAILURE);
+    }
+  }
+
+  if (debug_level)
+    SetMinimumLogSeverity(::android::base::DEBUG);
+
   LOG(INFO) << "Starting touch_keyboard_handler";
-  
+
   LoadHWConfig("touch-hw.csv", hw_config);
 
   // Fork into two processes, one to handle the keyboard functionality

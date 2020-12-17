@@ -43,7 +43,7 @@ bool UinputDevice::CreateUinputFD() {
                    " (" << uinput_fd_ << ")";
     return false;
   }
-  LOG(INFO) << "Uinput control file descriptor opened (" << uinput_fd_ << ")";
+  LOG(DEBUG) << "Uinput control file descriptor opened (" << uinput_fd_ << ")";
   return true;
 }
 
@@ -58,7 +58,7 @@ bool UinputDevice::EnableEventType(int ev_type) const {
                   "(" << std::dec << error << ")";
     return false;
   }
-  LOG(INFO) << "Enabled events of type 0x" << std::hex << ev_type;
+  LOG(DEBUG) << "Enabled events of type 0x" << std::hex << ev_type;
   return true;
 }
 
@@ -71,7 +71,7 @@ bool UinputDevice::EnableKeyEvent(int ev_code) const {
                   " events (" << std::dec << ")";
     return false;
   }
-  LOG(INFO) << "Enabled EV_KEY 0x" << std::hex << ev_code << " events";
+  LOG(DEBUG) << "Enabled EV_KEY 0x" << std::hex << ev_code << " events";
   return true;
 }
 
@@ -84,7 +84,7 @@ bool UinputDevice::EnableAbsEvent(int ev_code) const {
                   " events (" << std::dec << error << ")";
     return false;
   }
-  LOG(INFO) << "Enabled EV_ABS 0x" << std::hex << ev_code << " events";
+  LOG(DEBUG) << "Enabled EV_ABS 0x" << std::hex << ev_code << " events";
   return true;
 }
 

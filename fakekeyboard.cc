@@ -63,7 +63,7 @@ bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {
   top_margin = hw_config_.top_margin_mm;
 
   while(l_csv.read_row(x, y, w, h, keyname, keycode, keyname_fn, keycode_fn)) {
-    LOG(INFO) << "Key " << keyname << "(" << keycode << ") | " <<
+    LOG(DEBUG) << "Key " << keyname << "(" << keycode << ") | " <<
       keyname_fn << " (" << keycode_fn << "): " <<
       w << "x" << h << "@(" << x << "," << y << ") mm";
 
@@ -99,7 +99,7 @@ bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {
         return false;
     }
 
-    LOG(INFO) << "HW coords: (" << x1 << ", " << y1 << "), (" <<
+    LOG(DEBUG) << "HW coords: (" << x1 << ", " << y1 << "), (" <<
       x2 << ", " << y2 << ")";
 
     layout_.push_back(Key(keycode, keycode_fn, x1, x2, y1, y2));
