@@ -65,8 +65,3 @@ install(FILES 61-evdev-yogabook.hwdb
 install(FILES touch-keyboard-handler.service
 	DESTINATION ${SYSTEMD_UNIT_DIR})
 
-install(FILES touch-keyboard-sleep
-	DESTINATION "/lib/systemd/system-sleep/"
-	PERMISSIONS WORLD_EXECUTE GROUP_EXECUTE OWNER_EXECUTE
-	RENAME touch-keyboard)
-
