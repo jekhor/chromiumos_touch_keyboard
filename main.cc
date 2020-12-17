@@ -88,20 +88,24 @@ int main(int argc, char *argv[]) {
 
   LoadHWConfig("touch-hw.csv", hw_config);
 
-  // Fork into two processes, one to handle the keyboard functionality
-  // and one to handle the touchpad region.
-  int pid = fork();
-  if (pid < 0) {
-    LOG(FATAL) << "ERROR: Unable to fork! (" << pid << ")";
-  } else if (pid == 0) {
-    // TODO(charliemooney): Get these coordinates from somewhere not hard-coded
-    LOG(INFO) << "Creating Fake Touchpad.";
-    FakeTouchpad tp(tp_x1_mm, tp_x2_mm, tp_y1_mm, tp_y2_mm, hw_config);
-    tp.Start(kTouchSensorDevicePath, "virtual-touchpad");
-  } else {
-    FakeKeyboard kbd(hw_config);
-    kbd.Start(kTouchSensorDevicePath, "virtual-keyboard");
-    wait(NULL);
+  try {
+    // Fork into two processes, one to handle the keyboard functionality
+    // and one to handle the touchpad region.
+    int pid = fork();
+    if (pid < 0) {
+      LOG(FATAL) << "ERROR: Unable to fork! (" << pid << ")";
+    } else if (pid == 0) {
+      // TODO(charliemooney): Get these coordinates from somewhere not hard-coded
+      LOG(INFO) << "Creating Fake Touchpad.";
+      FakeTouchpad tp(tp_x1_mm, tp_x2_mm, tp_y1_mm, tp_y2_mm, hw_config);
+      tp.Start(kTouchSensorDevicePath, "virtual-touchpad");
+    } else {
+      FakeKeyboard kbd(hw_config);
+      kbd.Start(kTouchSensorDevicePath, "virtual-keyboard");
+      wait(NULL);
+    }
+  } catch (...) {
+    exit(EXIT_FAILURE);
   }
 
   return 0;
