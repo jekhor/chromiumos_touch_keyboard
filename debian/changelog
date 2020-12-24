@@ -1,3 +1,9 @@
+touch-keyboard (1.2.1) unstable; urgency=medium
+
+  * Fix build with debian testing
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Fri, 25 Dec 2020 02:28:14 +0300
+
 touch-keyboard (1.2) unstable; urgency=medium
 
   * Remove PWM settings (handled by kernel driver now)
