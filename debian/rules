@@ -17,6 +17,3 @@
 %:
 	dh $@
 
-override_dh_shlibdeps:
-	dh_shlibdeps -l/usr/lib/$(DEB_HOST_MULTIARCH)/android
-
