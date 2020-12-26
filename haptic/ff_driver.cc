@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <base/logging.h>
+#include "logging.h"
 #include <cstddef>
 #include <fcntl.h>
 #include <stdio.h>
@@ -12,8 +12,9 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <linux/input.h>
+#include <unistd.h>
 
-#include "touch_keyboard/haptic/ff_driver.h"
+#include "haptic/ff_driver.h"
 
 namespace {
 // This value drive the vibrator at max strength.
@@ -35,7 +36,7 @@ bool FFDriver::Init(const std::string& device_path) {
 
   fd_ = open(device_path.c_str(), O_RDWR | O_CLOEXEC);
   if (fd_ == -1) {
-    PLOG(ERROR) << "Fail to open haptic device";
+    PLOG(ERROR) << "Fail to open haptic device\n";
     return false;
   }
   return true;
@@ -43,7 +44,7 @@ bool FFDriver::Init(const std::string& device_path) {
 
 int FFDriver::UploadEffect(float magnitude, int time_ms) {
   if (fd_ == -1) {
-    PLOG(DEBUG) << "Cannot upload effect cause FFDriver is not initialized";
+    PLOG(DEBUG) << "Cannot upload effect cause FFDriver is not initialized\n";
     return -1;
   }
   struct ff_effect effect;
@@ -57,7 +58,7 @@ int FFDriver::UploadEffect(float magnitude, int time_ms) {
   effect.replay.delay = 0;
 
   if (ioctl(fd_, EVIOCSFF, &effect) == -1) {
-    PLOG(ERROR) << "Fail to upload effect";
+    PLOG(ERROR) << "Fail to upload effect\n";
     return -1;
   }
 
@@ -66,12 +67,12 @@ int FFDriver::UploadEffect(float magnitude, int time_ms) {
 
 bool FFDriver::PlayEffect(int id) {
   if (fd_ == -1) {
-    PLOG(DEBUG) << "Cannot play effect cause FFDriver is not initialized";
+    PLOG(DEBUG) << "Cannot play effect cause FFDriver is not initialized\n";
     return false;
   }
 
   if (id < 0) {
-    PLOG(ERROR) << "Invalid effect id";
+    PLOG(ERROR) << "Invalid effect id\n";
     return false;
   }
 
@@ -82,7 +83,7 @@ bool FFDriver::PlayEffect(int id) {
   play.value = 1;
 
   if (write(fd_, (const void*) &play, sizeof(play)) != sizeof(play)) {
-    PLOG(ERROR) << "Fail to play effect";
+    PLOG(ERROR) << "Fail to play effect\n";
     return false;
   }
   return true;

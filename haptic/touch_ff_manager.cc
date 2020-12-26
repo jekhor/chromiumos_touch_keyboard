@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <base/logging.h>
+#include "logging.h"
 #include <cstddef>
 
-#include "touch_keyboard/haptic/touch_ff_manager.h"
+#include "haptic/touch_ff_manager.h"
 
 namespace {
 // Default magnitude for haptic feedback.
@@ -30,17 +30,17 @@ TouchFFManager::TouchFFManager(int max_x, int max_y, int rotation) {
         touch_max_x_ = max_y;
         break;
       default:
-        LOG(ERROR) << "Invalid rotation angle: " << rotation;
+        LOG(ERROR) << "Invalid rotation angle: " << rotation << "\n";
     }
 
     touch_rotation_ = rotation;
 
     if (!left_driver_.Init(kLeftVibratorPath)) {
-      LOG(ERROR) << "Cannot find left motor";
+      LOG(ERROR) << "Cannot find left motor\n";
     }
 
     if (!right_driver_.Init(kRightVibratorPath)) {
-      LOG(ERROR) << "Cannot find right motor";
+      LOG(ERROR) << "Cannot find right motor\n";
     }
 
     RegisterFF(TouchKeyboardEvent::FingerDown, kDefaultHapticMagnitue,

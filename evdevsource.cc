@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "touch_keyboard/evdevsource.h"
+#include "evdevsource.h"
 
 namespace touch_keyboard {
 
 bool EvdevSource::OpenSourceDevice(std::string const &source_device_path) {
   source_fd_ = syscall_handler_->open(source_device_path.c_str(), O_RDONLY);
   if (source_fd_ < 0) {
-    PLOG(ERROR) << "Failed to open() source device " << source_device_path << ". (" << source_fd_ << ")";
+    PLOG(ERROR) << "Failed to open() source device " << source_device_path << ". (" << source_fd_ << ")\n";
     return false;
   }
   return true;
@@ -36,7 +36,7 @@ bool EvdevSource::GetNextEvent(int timeout_ms, struct input_event *ev) const {
   int num_bytes_read = syscall_handler_->read(source_fd_, ev, sizeof(*ev));
   if (num_bytes_read != sizeof(*ev)) {
     PLOG(ERROR) << "ERROR: A read failed to read an entire event. Only read " <<
-                   num_bytes_read << " of " << sizeof(*ev) << "expected bytes.";
+                   num_bytes_read << " of " << sizeof(*ev) << "expected bytes.\n";
     if (num_bytes_read == -1) {
 	    throw "Evdev read() failed";
     }

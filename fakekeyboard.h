@@ -6,7 +6,7 @@
 #define TOUCH_KEYBOARD_FAKEKEYBOARD_H_
 
 #include <algorithm>
-#include <base/macros.h>
+#include <base_macros.h>
 #include <list>
 #include <stdlib.h>
 #include <string>
@@ -14,10 +14,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "touch_keyboard/evdevsource.h"
-#include "touch_keyboard/haptic/touch_ff_manager.h"
-#include "touch_keyboard/statemachine/statemachine.h"
-#include "touch_keyboard/uinputdevice.h"
+#include "evdevsource.h"
+#include "haptic/touch_ff_manager.h"
+#include "statemachine/statemachine.h"
+#include "uinputdevice.h"
 
 namespace touch_keyboard {
 

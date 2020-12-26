@@ -7,8 +7,8 @@
 
 #include <unordered_map>
 
-#include "base/macros.h"
-#include "touch_keyboard/haptic/ff_driver.h"
+#include "base_macros.h"
+#include "haptic/ff_driver.h"
 
 namespace touch_keyboard {
 

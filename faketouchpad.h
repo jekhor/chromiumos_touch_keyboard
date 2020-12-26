@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "touch_keyboard/evdevsource.h"
-#include "touch_keyboard/statemachine/statemachine.h"
-#include "touch_keyboard/uinputdevice.h"
-#include "touch_keyboard/fakekeyboard.h"
+#include "evdevsource.h"
+#include "statemachine/statemachine.h"
+#include "uinputdevice.h"
+#include "fakekeyboard.h"
 
 namespace touch_keyboard {
 

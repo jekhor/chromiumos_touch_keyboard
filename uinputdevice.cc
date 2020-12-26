@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "touch_keyboard/uinputdevice.h"
+#include "uinputdevice.h"
 
 namespace touch_keyboard {
 
@@ -22,7 +22,7 @@ UinputDevice::~UinputDevice() {
   if (uinput_fd_ >= 0) {
     int error = syscall_handler_->ioctl(uinput_fd_, UI_DEV_DESTROY);
     if (error) {
-      PLOG(ERROR) << "Unable to destroy uinput device (" << error << ")";
+      PLOG(ERROR) << "Unable to destroy uinput device (" << error << ")\n";
     }
   }
 }
@@ -32,7 +32,7 @@ bool UinputDevice::CreateUinputFD() {
   // This file descriptor is used with ioctls to configure the device and
   // receive the outgoing event information.
   if (uinput_fd_ >= 0) {
-    LOG(ERROR) << "Control FD already opened! (" << uinput_fd_ << ") Quitting.";
+    LOG(ERROR) << "Control FD already opened! (" << uinput_fd_ << ") Quitting.\n";
     return false;
   }
 
@@ -40,10 +40,10 @@ bool UinputDevice::CreateUinputFD() {
                                       O_WRONLY | O_NONBLOCK);
   if (uinput_fd_ < 0) {
     PLOG(ERROR) << "Unable to open " << kUinputControlFilename <<
-                   " (" << uinput_fd_ << ")";
+                   " (" << uinput_fd_ << ")\n";
     return false;
   }
-  LOG(DEBUG) << "Uinput control file descriptor opened (" << uinput_fd_ << ")";
+  LOG(DEBUG) << "Uinput control file descriptor opened (" << uinput_fd_ << ")\n";
   return true;
 }
 
@@ -55,10 +55,10 @@ bool UinputDevice::EnableEventType(int ev_type) const {
   int error = syscall_handler_->ioctl(uinput_fd_, UI_SET_EVBIT, ev_type);
   if (error) {
     LOG(ERROR) << "Unable to enable event type 0x" << std::hex << ev_type <<
-                  "(" << std::dec << error << ")";
+                  "(" << std::dec << error << ")\n";
     return false;
   }
-  LOG(DEBUG) << "Enabled events of type 0x" << std::hex << ev_type;
+  LOG(DEBUG) << "Enabled events of type 0x" << std::hex << ev_type << "\n";
   return true;
 }
 
@@ -68,10 +68,10 @@ bool UinputDevice::EnableKeyEvent(int ev_code) const {
   int error = syscall_handler_->ioctl(uinput_fd_, UI_SET_KEYBIT, ev_code);
   if (error) {
     LOG(ERROR) << "Unable to enable EV_KEY 0x" << std::hex << ev_code <<
-                  " events (" << std::dec << ")";
+                  " events (" << std::dec << ")\n";
     return false;
   }
-  LOG(DEBUG) << "Enabled EV_KEY 0x" << std::hex << ev_code << " events";
+  LOG(DEBUG) << "Enabled EV_KEY 0x" << std::hex << ev_code << " events" << "\n";
   return true;
 }
 
@@ -81,10 +81,10 @@ bool UinputDevice::EnableAbsEvent(int ev_code) const {
   int error = syscall_handler_->ioctl(uinput_fd_, UI_SET_ABSBIT, ev_code);
   if (error) {
     LOG(ERROR) << "Unable to enable EV_ABS 0x" << std::hex << ev_code <<
-                  " events (" << std::dec << error << ")";
+                  " events (" << std::dec << error << ")\n";
     return false;
   }
-  LOG(DEBUG) << "Enabled EV_ABS 0x" << std::hex << ev_code << " events";
+  LOG(DEBUG) << "Enabled EV_ABS 0x" << std::hex << ev_code << " events\n";
   return true;
 }
 
@@ -108,7 +108,7 @@ bool UinputDevice::CopyABSOutputEvents(int source_evdev_fd,
   syscall_handler_->ioctl(source_evdev_fd, EVIOCGBIT(0, EV_MAX),
                           supported_event_types);
   if (!IsEventSupported(EV_ABS, supported_event_types)) {
-    LOG(ERROR) << "Touchscreen does not support EV_ABS events.";
+    LOG(ERROR) << "Touchscreen does not support EV_ABS events.\n";
     return false;
   }
 
@@ -150,12 +150,12 @@ bool UinputDevice::CopyABSOutputEvents(int source_evdev_fd,
     error = syscall_handler_->ioctl(uinput_fd_, UI_ABS_SETUP, &abs_setup);
     if (error) {
       LOG(ERROR) << "Unable to set up axis for event code 0x" << std::hex <<
-                    ev_code << " (" << std::dec << error << ")";
+                    ev_code << " (" << std::dec << error << ")\n";
       return false;
     }
   }
 
-  LOG(INFO) << "Successfully copied all EV_ABS events from source device";
+  LOG(INFO) << "Successfully copied all EV_ABS events from source device\n";
   return true;
 }
 
@@ -174,7 +174,7 @@ bool UinputDevice::FinalizeUinputCreation(
   device_info.id.version = kVersionNumber;
   error = syscall_handler_->ioctl(uinput_fd_, UI_DEV_SETUP, &device_info);
   if (error) {
-    LOG(ERROR) << "uinput device setup ioctl failed. (" << error << ")";
+    LOG(ERROR) << "uinput device setup ioctl failed. (" << error << ")\n";
     return false;
   }
 
@@ -183,11 +183,11 @@ bool UinputDevice::FinalizeUinputCreation(
   // send events.
   error = syscall_handler_->ioctl(uinput_fd_, UI_DEV_CREATE);
   if (error) {
-    LOG(ERROR) << "uinput device creation ioctl failed. (" << error << ")";
+    LOG(ERROR) << "uinput device creation ioctl failed. (" << error << ")\n";
     return false;
   }
 
-  LOG(INFO) << "Successfully finalized uinput device creation.";
+  LOG(INFO) << "Successfully finalized uinput device creation.\n";
   return true;
 }
 
@@ -202,7 +202,7 @@ bool UinputDevice::SendEvent(int ev_type, int ev_code, int value) const {
           syscall_handler_->write(uinput_fd_, &ev, sizeof(struct input_event));
   if (bytes_written != sizeof(struct input_event)) {
     LOG(ERROR) << "Failed to write() when sending an event. (" <<
-                  bytes_written << ")";
+                  bytes_written << ")\n";
     return false;
   }
   return true;

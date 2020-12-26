@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "touch_keyboard/statemachine/slot.h"
+#include "statemachine/slot.h"
 
 namespace mtstatemachine {
 

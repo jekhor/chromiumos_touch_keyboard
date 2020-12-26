@@ -5,7 +5,7 @@
 #ifndef TOUCH_KEYBOARD_EVDEVSOURCE_H_
 #define TOUCH_KEYBOARD_EVDEVSOURCE_H_
 
-#include <base/logging.h>
+#include <logging.h>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <stdio.h>
@@ -15,7 +15,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "touch_keyboard/syscallhandler.h"
+#include "syscallhandler.h"
 
 namespace touch_keyboard {
 
@@ -42,7 +42,7 @@ class EvdevSource {
     // testing this class.  For real use, allow it to use the default value
     // by using the constructor with no arguments.
     if (syscall_handler_ == NULL) {
-      LOG(INFO) << "NULL syscall_handler specified, using default.";
+      LOG(INFO) << "NULL syscall_handler specified, using default.\n";
       syscall_handler_ = &default_syscall_handler;
     }
   }

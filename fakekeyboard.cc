@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "touch_keyboard/fakekeyboard.h"
+#include "fakekeyboard.h"
 
 #define CSV_IO_NO_THREAD
 #include "csv.h"
@@ -43,7 +43,7 @@ bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {
   hw_pitch_x = hw_config_.res_x / hw_config_.width_mm;
   hw_pitch_y = hw_config_.res_y / hw_config_.height_mm;
 
-  LOG(DEBUG) << "pitch: " << hw_pitch_x << "x" << hw_pitch_y;
+  LOG(DEBUG) << "pitch: " << hw_pitch_x << "x" << hw_pitch_y << "\n";
 
   io::CSVReader<8,
     io::trim_chars<' ', '\t'>,
@@ -65,7 +65,7 @@ bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {
   while(l_csv.read_row(x, y, w, h, keyname, keycode, keyname_fn, keycode_fn)) {
     LOG(DEBUG) << "Key " << keyname << "(" << keycode << ") | " <<
       keyname_fn << " (" << keycode_fn << "): " <<
-      w << "x" << h << "@(" << x << "," << y << ") mm";
+      w << "x" << h << "@(" << x << "," << y << ") mm\n";
 
     int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 
@@ -95,12 +95,12 @@ bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {
         y2 = (left_margin + x + w) * hw_pitch_y;
         break;
       default:
-        LOG(ERROR) << "Rotation by " << hw_config_.rotation << " degrees is not supported";
+        LOG(ERROR) << "Rotation by " << hw_config_.rotation << " degrees is not supported\n";
         return false;
     }
 
     LOG(DEBUG) << "HW coords: (" << x1 << ", " << y1 << "), (" <<
-      x2 << ", " << y2 << ")";
+      x2 << ", " << y2 << ")\n";
 
     layout_.push_back(Key(keycode, keycode_fn, x1, x2, y1, y2));
   }
@@ -149,7 +149,7 @@ int FakeKeyboard::GenerateEventForArrivingFinger(
         *event_code = layout_[key_num].event_code_;
 
       LOG(DEBUG) << "fn_key_pressed_: " << fn_key_pressed_ << ", event_code: " <<
-        *event_code;
+        *event_code << "\n";
 
       Event ev(*event_code, kKeyDownEvent,
                AddMsToTimespec(now, kEventDelayMS), tid);
@@ -214,7 +214,7 @@ bool FakeKeyboard::StillOnFirstKey(
 }
 
 void FakeKeyboard::RejectFinger(int tid, RejectionStatus reason) {
-  LOG(DEBUG) << "Reject finger, reason " << static_cast<int>(reason);
+  LOG(DEBUG) << "Reject finger, reason " << static_cast<int>(reason) << "\n";
   // First, mark the finger's FingerData as rejected.
   finger_data_[tid].rejection_status_ = reason;
 
@@ -399,7 +399,7 @@ void FakeKeyboard::Consume() {
                KEY_SPACE && it->second.max_pressure_ > kMaxTapPressure)) {
             LOG(INFO) << "Tap rejected!  Pressure of " <<
               it->second.max_pressure_ << " is out of range " <<
-              kMinTapPressure << "->" << kMaxTapPressure;
+              kMinTapPressure << "->" << kMaxTapPressure << "\n";
             continue;
           }
         } else {
@@ -408,7 +408,7 @@ void FakeKeyboard::Consume() {
              KEY_SPACE && it->second.max_touch_major_ > kMaxTapTouchDiameter)) {
             LOG(INFO) << "Tap rejected!  Diameter of " <<
               it->second.max_touch_major_ << " is out of range " <<
-              kMinTapTouchDiameter << "->" << kMaxTapTouchDiameter;
+              kMinTapTouchDiameter << "->" << kMaxTapTouchDiameter << "\n";
             continue;
           }
 
@@ -420,11 +420,11 @@ void FakeKeyboard::Consume() {
           LOG(ERROR) << "No finger data for event that should have some! " <<
                        "(guaranteed: " << next_event.is_guaranteed_ << ", " <<
                        "is_down: " << next_event.is_down_ << ", " <<
-                       "tid: " << next_event.tid_ << ")";
+                       "tid: " << next_event.tid_ << ")\n";
         }
       }
 
-      LOG(DEBUG) << "Event: EV_KEY, code " << next_event.ev_code_ << " down: " << next_event.is_down_;
+      LOG(DEBUG) << "Event: EV_KEY, code " << next_event.ev_code_ << " down: " << next_event.is_down_ << "\n";
       // Actually send the event and update the fingerdata if applicable.
       SendEvent(EV_KEY, next_event.ev_code_, next_event.is_down_ ? 1 : 0);
       needs_syn = true;

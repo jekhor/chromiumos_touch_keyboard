@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-#include "touch_keyboard/faketouchpad.h"
+#include "faketouchpad.h"
 
 namespace touch_keyboard {
 
@@ -49,12 +49,12 @@ FakeTouchpad::FakeTouchpad(double xmin_mm, double xmax_mm,
       ymax_ = (left_margin + xmax_mm) * hw_pitch_y;
       break;
     default:
-      LOG(ERROR) << "Invalid rotation value: " << hw_config_.rotation;
+      LOG(ERROR) << "Invalid rotation value: " << hw_config_.rotation << "\n";
       throw;
   }
 
   LOG(INFO) << "FakeTouchpad geometry: (" << xmin_ << ", " << xmax_ <<
-                                    "), (" << ymin_ << ", " << ymax_ << ")";
+                                    "), (" << ymin_ << ", " << ymax_ << ")\n";
   for (int i = 0; i < mtstatemachine::kNumSlots; i++) {
     slot_memberships_.push_back(false);
   }

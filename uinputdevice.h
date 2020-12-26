@@ -5,7 +5,7 @@
 #ifndef TOUCH_KEYBOARD_UINPUTDEVICE_H_
 #define TOUCH_KEYBOARD_UINPUTDEVICE_H_
 
-#include <base/logging.h>
+#include "logging.h"
 #include <error.h>
 #include <fcntl.h>
 #include <linux/uinput.h>
@@ -14,8 +14,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "touch_keyboard/syscallhandler.h"
-#include "touch_keyboard/uinput_definitions.h"
+#include "syscallhandler.h"
+#include "uinput_definitions.h"
 
 
 namespace touch_keyboard {

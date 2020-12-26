@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <base/logging.h>
+#include <logging.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <iostream>
@@ -10,8 +10,8 @@
 #define CSV_IO_NO_THREAD
 #include "csv.h"
 
-#include "touch_keyboard/fakekeyboard.h"
-#include "touch_keyboard/faketouchpad.h"
+#include "fakekeyboard.h"
+#include "faketouchpad.h"
 
 // This filepath is used as the input evdev device. Whichever touch sensor is
 // to be used for touch keyboard input should have a udev rule put in place to
@@ -44,7 +44,7 @@ bool LoadHWConfig(std::string const &hw_config_file, struct touch_keyboard::hw_c
   LOG(INFO) << "Touchpad HW config: " << res_x << "x" << res_y << " points, " <<
     w_mm << "x" << h_mm << " mm, margins is " <<
     left_margin_mm << "+" << top_margin_mm <<
-    ", rotated by " << rotation << " deg. clockwise";
+    ", rotated by " << rotation << " deg. clockwise.\n";
 
   hw_config.res_x = res_x;
   hw_config.res_y = res_y;
@@ -82,9 +82,9 @@ int main(int argc, char *argv[]) {
   }
 
   if (debug_level)
-    SetMinimumLogSeverity(::android::base::DEBUG);
+    SetMinimumLogSeverity(DEBUG);
 
-  LOG(INFO) << "Starting touch_keyboard_handler";
+  LOG(INFO) << "Starting touch_keyboard_handler\n";
 
   LoadHWConfig("touch-hw.csv", hw_config);
 
@@ -93,10 +93,10 @@ int main(int argc, char *argv[]) {
     // and one to handle the touchpad region.
     int pid = fork();
     if (pid < 0) {
-      LOG(FATAL) << "ERROR: Unable to fork! (" << pid << ")";
+      LOG(FATAL) << "ERROR: Unable to fork! (" << pid << ")\n";
     } else if (pid == 0) {
       // TODO(charliemooney): Get these coordinates from somewhere not hard-coded
-      LOG(INFO) << "Creating Fake Touchpad.";
+      LOG(INFO) << "Creating Fake Touchpad.\n";
       FakeTouchpad tp(tp_x1_mm, tp_x2_mm, tp_y1_mm, tp_y2_mm, hw_config);
       tp.Start(kTouchSensorDevicePath, "virtual-touchpad");
     } else {

@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "touch_keyboard/uinput_definitions.h"
+#include "uinput_definitions.h"
 
 namespace touch_keyboard {
 
