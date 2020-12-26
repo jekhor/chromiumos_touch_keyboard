@@ -18,3 +18,18 @@ Description: Userspace driver for touchpad-based keyboard
  This package is fork of touch keyboard driver from ChromiumOS. It contains
  keyboard geometry description for Lenovo Yoga Book but can be reconfigured for
  any touch keyboad.
+
+Package: touch-keyboard-udeb
+Architecture: any
+Package-Type: udeb
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Section: debian-installer
+Description: Touchpad-based keyboard support for the debian-installer
+ The userspace driver to support touch keyboard based on touchpad. Such
+ keyboard may be found in some tablets (Lenovo Yoga Book YB1-X9* for example).
+ .
+ This package is fork of touch keyboard driver from ChromiumOS. It contains
+ keyboard geometry description for Lenovo Yoga Book but can be reconfigured for
+ any touch keyboad.
+ .
+ The udeb is used by the debian-installer.
