@@ -7,7 +7,6 @@
 
 #include <base/logging.h>
 #include <fcntl.h>
-#include <gtest/gtest_prod.h>  // for FRIEND_TEST
 #include <linux/input.h>
 #include <stdio.h>
 #include <string>
@@ -56,13 +55,6 @@ class EvdevSource {
 
   SyscallHandler *syscall_handler_;
   int source_fd_;
-
-  friend class EvdevSourceTest;
-  FRIEND_TEST(EvdevSourceTest, OpenDeviceSucceedTest);
-  FRIEND_TEST(EvdevSourceTest, OpenDeviceFailureTest);
-  FRIEND_TEST(EvdevSourceTest, EventCaptureTimeoutDisabledTest);
-  FRIEND_TEST(EvdevSourceTest, EventCaptureTimeoutEnabledTest);
-  FRIEND_TEST(EvdevSourceTest, EventCaptureTimesOutTest);
 };
 
 }  // namespace touch_keyboard

@@ -8,7 +8,6 @@
 #include <base/logging.h>
 #include <error.h>
 #include <fcntl.h>
-#include <gtest/gtest_prod.h>  // for FRIEND_TEST
 #include <linux/uinput.h>
 #include <stdio.h>
 #include <string>
@@ -84,17 +83,6 @@ class UinputDevice {
   // A helper function that determines if an event is supported by a device
   // when trying to clone its capabilities.
   bool IsEventSupported(int event, int64_t *supported_event_types) const;
-
-  friend class UinputDeviceTest;
-  FRIEND_TEST(UinputDeviceTest, UinputControlOpeningTest);
-  FRIEND_TEST(UinputDeviceTest, UinputControlOpeningFailureTest);
-  FRIEND_TEST(UinputDeviceTest, EnableEventTypeTest);
-  FRIEND_TEST(UinputDeviceTest, EnableKeyEventTest);
-  FRIEND_TEST(UinputDeviceTest, EnableAbsEventTest);
-  FRIEND_TEST(UinputDeviceTest, FinalizeUinputCreationSuccessTest);
-  FRIEND_TEST(UinputDeviceTest, FinalizeUinputCreationDEV_SETUPFailTest);
-  FRIEND_TEST(UinputDeviceTest, FinalizeUinputCreationDEV_CREATEFailTest);
-  FRIEND_TEST(UinputDeviceTest, SendEventTest);
 };
 
 }  // namespace touch_keyboard
