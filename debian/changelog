@@ -2,6 +2,7 @@ touch-keyboard (1.3) unstable; urgency=medium
 
   * Remove all unit-tests
   * Remove android-libbase dependency
+  * Generate udeb package for debian-installer also
 
  -- Yauhen Kharuzhy <jekhor@gmail.com>  Sat, 26 Dec 2020 18:06:05 +0300
 
