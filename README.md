@@ -8,7 +8,7 @@ To get some details about the project, check the [README.upstream.md](README.ups
 ## Build and install
 
 ```
-apt install cmake android-libbase-dev
+apt install build-essential cmake
 mkdir build
 cd build
 cmake ../
