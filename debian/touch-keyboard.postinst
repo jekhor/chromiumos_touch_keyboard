@@ -3,6 +3,6 @@
 confdir="/etc/touch_keyboard"
 
 if [ ! -e $confdir/layout.csv ]; then
-	ln -s $confdir/layouts/layout-YB1-X91-ru.csv $confdir/layout.csv
+	ln -s $confdir/layouts/YB1-X9x-pc105.csv $confdir/layout.csv
 fi
 
