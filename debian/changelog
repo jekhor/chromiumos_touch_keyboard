@@ -1,9 +1,11 @@
-touch-keyboard (1.4) UNRELEASED; urgency=medium
+touch-keyboard (1.4) unstable; urgency=medium
 
   * Make touchpad geometry customizable
   * Add virtual touchpad buttons along of left and right sides
+  * Move keyboard layouts to separated dir
+  * Add PC-105-like international keyboard layout
 
- -- Yauhen Kharuzhy <jekhor@gmail.com>  Tue, 19 Jan 2021 00:22:42 +0300
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Tue, 19 Jan 2021 02:29:02 +0300
 
 touch-keyboard (1.3) unstable; urgency=medium
 
