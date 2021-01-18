@@ -29,7 +29,10 @@ set(UDEV_DIR "/lib/udev/")
 install(TARGETS touch_keyboard_handler
 	DESTINATION sbin)
 
-install(FILES layout.csv layout-touchpad.csv touch-hw.csv
+install(DIRECTORY layouts
+	DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/touch_keyboard)
+
+install(FILES layout-touchpad.csv touch-hw.csv
 	DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/touch_keyboard)
 
 install(FILES 60-touch-keyboard.rules

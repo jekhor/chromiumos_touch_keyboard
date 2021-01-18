@@ -1,0 +1,8 @@
+#!/bin/sh
+
+confdir="/etc/touch_keyboard"
+
+if [ ! -e $confdir/layout.csv ]; then
+	ln -s $confdir/layouts/layout-YB1-X91-ru.csv $confdir/layout.csv
+fi
+
