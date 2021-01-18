@@ -29,14 +29,15 @@ class FakeTouchpad : public UinputDevice, public EvdevSource {
   * illusion of a normal touchpad.
   */
  public:
-   FakeTouchpad(double xmin_mm, double xmax_mm,
-                           double ymin_mm, double ymax_mm,
-                           struct hw_config &hw_config);
+   FakeTouchpad(struct hw_config &hw_config);
 
   void Start(std::string const &source_device_path,
              std::string const &touchpad_device_name);
 
  private:
+  // Load touchpad geometry from file
+  bool LoadLayout(std::string const &layout_filename);
+
   // Loop forever consuming events from the source and emitting them from the
   // fake touchpad -- the main workhorse function that Start() calls.
   void Consume();

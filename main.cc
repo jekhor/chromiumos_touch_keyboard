@@ -57,11 +57,6 @@ bool LoadHWConfig(std::string const &hw_config_file, struct touch_keyboard::hw_c
   return true;
 }
 
-const double tp_x1_mm = 68;
-const double tp_x2_mm = 155;
-const double tp_y1_mm = 98.5;
-const double tp_y2_mm = 133;
-
 int main(int argc, char *argv[]) {
   struct touch_keyboard::hw_config hw_config;
   int debug_level = 0;
@@ -88,16 +83,17 @@ int main(int argc, char *argv[]) {
 
   LoadHWConfig("touch-hw.csv", hw_config);
 
+  // Fork into two processes, one to handle the keyboard functionality
+  // and one to handle the touchpad region.
+  int pid = fork();
+
   try {
-    // Fork into two processes, one to handle the keyboard functionality
-    // and one to handle the touchpad region.
-    int pid = fork();
     if (pid < 0) {
       LOG(FATAL) << "ERROR: Unable to fork! (" << pid << ")\n";
     } else if (pid == 0) {
       // TODO(charliemooney): Get these coordinates from somewhere not hard-coded
       LOG(INFO) << "Creating Fake Touchpad.\n";
-      FakeTouchpad tp(tp_x1_mm, tp_x2_mm, tp_y1_mm, tp_y2_mm, hw_config);
+      FakeTouchpad tp(hw_config);
       tp.Start(kTouchSensorDevicePath, "virtual-touchpad");
     } else {
       FakeKeyboard kbd(hw_config);
@@ -105,6 +101,7 @@ int main(int argc, char *argv[]) {
       wait(NULL);
     }
   } catch (...) {
+    LOG(ERROR) << "Exception occured";
     exit(EXIT_FAILURE);
   }
 

@@ -6,16 +6,45 @@
 
 #include "faketouchpad.h"
 
+#define CSV_IO_NO_THREAD
+#include "csv.h"
+
 namespace touch_keyboard {
 
-FakeTouchpad::FakeTouchpad(double xmin_mm, double xmax_mm,
-                           double ymin_mm, double ymax_mm,
-                           struct hw_config &hw_config) :
+FakeTouchpad::FakeTouchpad(struct hw_config &hw_config) :
   hw_config_(hw_config) {
 
-  double hw_pitch_x = hw_config_.res_x / hw_config_.width_mm;
-  double hw_pitch_y = hw_config_.res_y / hw_config_.height_mm;
+  if (!LoadLayout("layout-touchpad.csv"))
+    throw "Failed to load touchpad geometry";
+
+  for (int i = 0; i < mtstatemachine::kNumSlots; i++) {
+    slot_memberships_.push_back(false);
+  }
+}
+
+bool FakeTouchpad::LoadLayout(std::string const &layout_filename) {
+  double hw_pitch_x, hw_pitch_y;
   double left_margin, top_margin;
+  double xmin_mm, ymin_mm, xmax_mm, ymax_mm;
+
+  hw_pitch_x = hw_config_.res_x / hw_config_.width_mm;
+  hw_pitch_y = hw_config_.res_y / hw_config_.height_mm;
+
+  LOG(DEBUG) << "pitch: " << hw_pitch_x << "x" << hw_pitch_y << "\n";
+
+  io::CSVReader<4,
+    io::trim_chars<' ', '\t'>,
+    io::no_quote_escape<';'>> l_csv(layout_filename);
+
+  l_csv.read_header(io::ignore_missing_column, "x1", "y1", "x2", "y2");
+
+  if (!l_csv.read_row(xmin_mm, ymin_mm, xmax_mm, ymax_mm)) {
+      LOG(ERROR) << "CSV read failed";
+      return false;
+  }
+
+  LOG(DEBUG) << "x1: " << xmin_mm << ", y1: " << ymin_mm << ", x2: " << xmax_mm <<
+    ", y2:" << ymax_mm;
 
   left_margin = hw_config_.left_margin_mm;
   top_margin = hw_config_.top_margin_mm;
@@ -25,39 +54,43 @@ FakeTouchpad::FakeTouchpad(double xmin_mm, double xmax_mm,
 
   switch (hw_config_.rotation) {
     case 0:
-      xmin_ = (xmin_mm + left_margin) * hw_pitch_x;
-      xmax_ = (xmax_mm + left_margin) * hw_pitch_x;
-      ymin_ = (ymin_mm + top_margin) * hw_pitch_y;
-      ymax_ = (ymax_mm + top_margin) * hw_pitch_y;
+      xmin_ = xmin_mm + left_margin;
+      xmax_ = xmax_mm + left_margin;
+      ymin_ = ymin_mm + top_margin;
+      ymax_ = ymax_mm + top_margin;
       break;
     case 90:
-      xmin_ = (top_margin + ymin_mm) * hw_pitch_x;
-      xmax_ = (top_margin + ymax_mm) * hw_pitch_x;
-      ymin_ = (hw_config_.height_mm - (left_margin + xmax_mm)) * hw_pitch_y;
-      ymax_ = (hw_config_.height_mm - (left_margin + xmin_mm)) * hw_pitch_y;
+      xmin_ = top_margin + ymin_mm;
+      xmax_ = top_margin + ymax_mm;
+      ymin_ = hw_config_.height_mm - (left_margin + xmax_mm);
+      ymax_ = hw_config_.height_mm - (left_margin + xmin_mm);
       break;
     case 180:
-      xmin_ = (hw_config_.width_mm - (xmax_mm + left_margin)) * hw_pitch_x;
-      xmax_ = (hw_config_.width_mm - (xmin_mm + left_margin)) * hw_pitch_x;
-      ymin_ = (hw_config_.height_mm - (ymax_mm + top_margin)) * hw_pitch_y;
-      ymax_ = (hw_config_.height_mm - (ymin_mm + top_margin)) * hw_pitch_y;
+      xmin_ = hw_config_.width_mm - (xmax_mm + left_margin);
+      xmax_ = hw_config_.width_mm - (xmin_mm + left_margin);
+      ymin_ = hw_config_.height_mm - (ymax_mm + top_margin);
+      ymax_ = hw_config_.height_mm - (ymin_mm + top_margin);
       break;
     case 270:
-      xmin_ = (hw_config_.width_mm - (ymax_mm + top_margin)) * hw_pitch_x;
-      xmax_ = (hw_config_.width_mm - (ymin_mm + top_margin)) * hw_pitch_x;
-      ymin_ = (left_margin + xmin_mm) * hw_pitch_y;
-      ymax_ = (left_margin + xmax_mm) * hw_pitch_y;
+      xmin_ = hw_config_.width_mm - (ymax_mm + top_margin);
+      xmax_ = hw_config_.width_mm - (ymin_mm + top_margin);
+      ymin_ = left_margin + xmin_mm;
+      ymax_ = left_margin + xmax_mm;
       break;
     default:
       LOG(ERROR) << "Invalid rotation value: " << hw_config_.rotation << "\n";
       throw;
   }
 
+  xmin_ *= hw_pitch_x;
+  xmax_ *= hw_pitch_x;
+  ymin_ *= hw_pitch_y;
+  ymax_ *= hw_pitch_y;
+
   LOG(INFO) << "FakeTouchpad geometry: (" << xmin_ << ", " << xmax_ <<
                                     "), (" << ymin_ << ", " << ymax_ << ")\n";
-  for (int i = 0; i < mtstatemachine::kNumSlots; i++) {
-    slot_memberships_.push_back(false);
-  }
+
+  return true;
 }
 
 void FakeTouchpad::Start(std::string const &source_device_path,
