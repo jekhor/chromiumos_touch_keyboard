@@ -48,6 +48,8 @@
 #include <cassert>
 #include <cerrno>
 #include <istream>
+#include <stdexcept>
+#include <limits>
 
 namespace io{
         ////////////////////////////////////////////////////////////////////////////
