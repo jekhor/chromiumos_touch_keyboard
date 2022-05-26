@@ -92,16 +92,17 @@ int main(int argc, char *argv[]) {
       LOG(FATAL) << "ERROR: Unable to fork! (" << pid << ")\n";
     } else if (pid == 0) {
       // TODO(charliemooney): Get these coordinates from somewhere not hard-coded
-      LOG(INFO) << "Creating Fake Touchpad.\n";
+      LOG(INFO) << "Creating Fake Touchpad\n";
       FakeTouchpad tp(hw_config);
       tp.Start(kTouchSensorDevicePath, "virtual-touchpad");
     } else {
+      LOG(INFO) << "Creating Fake Keyboard\n";
       FakeKeyboard kbd(hw_config);
       kbd.Start(kTouchSensorDevicePath, "virtual-keyboard");
       wait(NULL);
     }
   } catch (...) {
-    LOG(ERROR) << "Exception occured";
+    LOG(ERROR) << "Exception occured\n";
     exit(EXIT_FAILURE);
   }
 
