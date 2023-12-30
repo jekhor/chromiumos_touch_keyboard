@@ -1,3 +1,9 @@
+touch-keyboard (1.4.2) unstable; urgency=medium
+
+  * Update csv.h to latest version
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Sat, 30 Dec 2023 02:51:08 +0200
+
 touch-keyboard (1.4.1) unstable; urgency=medium
 
   * layouts: Fix invalid mouse button definitions
