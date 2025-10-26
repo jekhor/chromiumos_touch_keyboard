@@ -2,6 +2,12 @@ evdev:name:Goodix Capacitive TouchScreen:dmi:bvnLENOVO*pnLenovoYB1-X9*
  TOUCH_KEYBOARD=1
  LIBINPUT_IGNORE_DEVICE=1
 
+evdev:name:Goodix Capacitive TouchScreen:dmi:*pnCHERRYVIEWD1PLATFORM*:pvrYETI-11*:*
+ TOUCH_KEYBOARD=1
+ LIBINPUT_IGNORE_DEVICE=1
+
 evdev:name:virtual-touchpad:dmi:bvnLENOVO*pnLenovoYB1-X9*
  ID_INPUT_TOUCHPAD_INTEGRATION=internal
 
+evdev:name:virtual-touchpad:dmi:*pnCHERRYVIEWD1PLATFORM*:pvrYETI-11*:*
+ ID_INPUT_TOUCHPAD_INTEGRATION=internal
