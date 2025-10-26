@@ -1,3 +1,9 @@
+touch-keyboard (1.4.3) unstable; urgency=medium
+
+  * Add support of Android Yoga Book version
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Sun, 26 Oct 2025 13:51:19 +0200
+
 touch-keyboard (1.4.2) unstable; urgency=medium
 
   * Update csv.h to latest version
