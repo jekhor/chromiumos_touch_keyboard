@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.28)
 
 project(chromiumos_touch_keyboard)
 
@@ -27,7 +27,7 @@ set(SYSTEMD_UNIT_DIR ${CMAKE_INSTALL_LIBDIR}/systemd/system)
 set(UDEV_DIR ${CMAKE_INSTALL_LIBDIR}/udev)
 
 install(TARGETS touch_keyboard_handler
-	DESTINATION sbin)
+	DESTINATION "${CMAKE_INSTALL_SBINDIR}")
 
 install(DIRECTORY layouts
 	DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/touch_keyboard)
