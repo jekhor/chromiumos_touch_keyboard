@@ -11,7 +11,7 @@ namespace {
 // Default magnitude for haptic feedback.
 constexpr double kDefaultHapticMagnitue = 1.0;
 // Default duration for haptic feedback in ms.
-constexpr int kDefaultHapticDurationMs = 100;
+constexpr int kDefaultHapticDurationMs = 4;
 // Path for left and right vibrators.
 const char kLeftVibratorPath[] = "/dev/left_vibrator";
 const char kRightVibratorPath[] = "/dev/right_vibrator";

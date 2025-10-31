@@ -18,7 +18,7 @@
 
 namespace {
 // This value drive the vibrator at max strength.
-constexpr int kMaxDriverInput = 0x7f;
+constexpr int kMaxDriverInput = 0xffff;
 }
 
 namespace touch_keyboard {
@@ -31,6 +31,7 @@ FFDriver::~FFDriver() {
 
 // Try to open the device, will return false if failed.
 bool FFDriver::Init(const std::string& device_path) {
+  struct input_event ie;
   // Close the fd if previously inited.
   CloseFDIfValid();
 
@@ -39,6 +40,14 @@ bool FFDriver::Init(const std::string& device_path) {
     PLOG(ERROR) << "Fail to open haptic device\n";
     return false;
   }
+
+  ie.type = EV_FF;
+  ie.code = FF_GAIN;
+  ie.value = 0xFFFF;
+
+  if (write(fd_, &ie, sizeof(ie)) == -1)
+    PLOG(ERROR) << "Failed to set FF gain: " << errno << "\n";
+
   return true;
 }
 
