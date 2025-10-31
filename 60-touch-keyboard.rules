@@ -2,5 +2,11 @@ ACTION=="remove", GOTO="default_end"
 
 SUBSYSTEM=="input", KERNEL=="event*", ENV{TOUCH_KEYBOARD}=="1", SYMLINK+="touch_keyboard", TAG+="systemd", ENV{SYSTEMD_WANTS}+="touch-keyboard-handler.service"
 
+# Create /dev/{left,right}_vibrator symlinks for DRV2604 haptic devices
+KERNEL=="event*", SUBSYSTEM=="input", KERNELS=="i2c-DRV2604:00", SYMLINK+="right_vibrator"
+KERNEL=="event*", SUBSYSTEM=="input", KERNELS=="i2c-DRV2604:01", SYMLINK+="left_vibrator"
+KERNEL=="event*", SUBSYSTEM=="input", KERNELS=="i2c-drv2604l.0", SYMLINK+="right_vibrator"
+KERNEL=="event*", SUBSYSTEM=="input", KERNELS=="i2c-drv2604l.1", SYMLINK+="left_vibrator"
+
 LABEL="default_end"
 
