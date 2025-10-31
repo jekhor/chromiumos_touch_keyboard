@@ -1,3 +1,9 @@
+touch-keyboard (1.4.5) unstable; urgency=medium
+
+  * Vibration feedback support
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Sat, 01 Nov 2025 01:28:52 +0200
+
 touch-keyboard (1.4.4) unstable; urgency=medium
 
   * Fix some build errors, merged PRs #10, #14, #15
