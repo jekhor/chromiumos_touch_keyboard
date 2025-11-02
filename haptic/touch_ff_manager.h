@@ -21,6 +21,11 @@ enum class TouchKeyboardEvent {
   FingerUp,
 };
 
+// Default magnitude for haptic feedback.
+constexpr double kDefaultHapticMagnitude = 1.0;
+// Default duration for haptic feedback in ms.
+constexpr int kDefaultHapticDurationMs = 6;
+
 class TouchFFManager {
   /* TouchFFManager (touch force feeback manager) class manages the haptic
    * feedback for the touch keyboard. It is initialized with the length of x
@@ -31,7 +36,9 @@ class TouchFFManager {
  public:
   // Init TouchFFManager with max_x, where max_x is the max possible x
   // of the touch surface.
-  explicit TouchFFManager(int max_x, int max_y, int rotation);
+  explicit TouchFFManager(int max_x, int max_y, int rotation,
+                          double magnitude = kDefaultHapticMagnitude,
+                          int duration_ms = kDefaultHapticDurationMs);
 
   // Inform the TouchFFManager that a particular kind of keyboard event as
   // happened at which x location. This may or may not trigger haptic feedback.
@@ -70,6 +77,9 @@ class TouchFFManager {
 
   // Touchscreen rotation angle, CW
   int touch_rotation_;
+
+  double magnitude_;
+  int duration_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchFFManager);
 };

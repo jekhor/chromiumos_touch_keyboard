@@ -26,15 +26,16 @@ constexpr int kMaxTapPressure = 110;
 constexpr int kMinTapTouchDiameter = 300;
 constexpr int kMaxTapTouchDiameter = 3000;
 
-FakeKeyboard::FakeKeyboard(struct hw_config &hw_config) :
+FakeKeyboard::FakeKeyboard(struct hw_config &hw_config,
+    TouchFFManager &ffManager) :
   hw_config_(hw_config) {
 
   fn_key_pressed_ = false;
 
   LoadLayout("layout.csv");
 
-  ff_manager_ = new TouchFFManager(hw_config_.res_x, hw_config_.res_y,
-      hw_config_.rotation);
+  ff_manager_ = &ffManager;
+
 }
 
 bool FakeKeyboard::LoadLayout(std::string const &layout_filename) {

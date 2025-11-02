@@ -12,6 +12,7 @@
 
 #include "fakekeyboard.h"
 #include "faketouchpad.h"
+#include "haptic/touch_ff_manager.h"
 
 // This filepath is used as the input evdev device. Whichever touch sensor is
 // to be used for touch keyboard input should have a udev rule put in place to
@@ -20,6 +21,7 @@ constexpr char kTouchSensorDevicePath[] = "/dev/touch_keyboard";
 
 using touch_keyboard::FakeTouchpad;
 using touch_keyboard::FakeKeyboard;
+using touch_keyboard::TouchFFManager;
 
 bool LoadHWConfig(std::string const &hw_config_file, struct touch_keyboard::hw_config &hw_config) {
   io::CSVReader<7,
@@ -61,14 +63,22 @@ int main(int argc, char *argv[]) {
   struct touch_keyboard::hw_config hw_config;
   int debug_level = 0;
   int opt;
+  double ff_magnitude = 1.0;
+  int ff_duration_ms = 4;
 
-  while ((opt = getopt(argc, argv, "hd")) != -1) {
+  while ((opt = getopt(argc, argv, "hdm:D:")) != -1) {
     switch (opt) {
       case 'h':
-        std::cerr << "Usage: touch_keyboard_handler [-h] [-d]\n";
+        std::cerr << "Usage: touch_keyboard_handler [-h] [-d] [-m <magnitude>] [-D <duration_ms>]\n";
         return 0;
       case 'd':
         debug_level++;
+        break;
+      case 'm':
+        ff_magnitude = atof(optarg);
+        break;
+      case 'D':
+        ff_duration_ms = atoi(optarg);
         break;
       default:
         std::cerr << "Unknown option " << (char)opt << "\n";
@@ -96,7 +106,10 @@ int main(int argc, char *argv[]) {
       FakeTouchpad tp(hw_config);
       tp.Start(kTouchSensorDevicePath, "virtual-touchpad");
     } else {
-      FakeKeyboard kbd(hw_config);
+      TouchFFManager ffManager(hw_config.res_x, hw_config.res_y,
+          hw_config.rotation, ff_magnitude, ff_duration_ms);
+
+      FakeKeyboard kbd(hw_config, ffManager);
       kbd.Start(kTouchSensorDevicePath, "virtual-keyboard");
       wait(NULL);
     }

@@ -173,7 +173,7 @@ class FakeKeyboard : public UinputDevice, public EvdevSource {
   * keyboard events.
   */
  public:
-  FakeKeyboard(struct hw_config &hw_config);
+  FakeKeyboard(struct hw_config &hw_config, TouchFFManager &ffManager);
 
   // Use this function to actually start processing.  Start will block forever
   // and should never return, but a new keyboard device should appear and

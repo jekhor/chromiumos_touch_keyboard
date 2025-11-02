@@ -8,10 +8,6 @@
 #include "haptic/touch_ff_manager.h"
 
 namespace {
-// Default magnitude for haptic feedback.
-constexpr double kDefaultHapticMagnitue = 1.0;
-// Default duration for haptic feedback in ms.
-constexpr int kDefaultHapticDurationMs = 4;
 // Path for left and right vibrators.
 const char kLeftVibratorPath[] = "/dev/left_vibrator";
 const char kRightVibratorPath[] = "/dev/right_vibrator";
@@ -19,7 +15,8 @@ const char kRightVibratorPath[] = "/dev/right_vibrator";
 
 namespace touch_keyboard {
 
-TouchFFManager::TouchFFManager(int max_x, int max_y, int rotation) {
+TouchFFManager::TouchFFManager(int max_x, int max_y, int rotation,
+    double magnitude, int duration_ms) {
     switch (rotation) {
       case 0:
       case 180:
@@ -43,8 +40,10 @@ TouchFFManager::TouchFFManager(int max_x, int max_y, int rotation) {
       LOG(ERROR) << "Cannot find right motor\n";
     }
 
-    RegisterFF(TouchKeyboardEvent::FingerDown, kDefaultHapticMagnitue,
-               kDefaultHapticDurationMs);
+    magnitude_ = magnitude;
+    duration_ms_ = duration_ms;
+
+    RegisterFF(TouchKeyboardEvent::FingerDown, magnitude_, duration_ms_);
 }
 
 void TouchFFManager::RegisterFF(TouchKeyboardEvent event,
