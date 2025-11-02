@@ -23,8 +23,8 @@ add_executable(touch_keyboard_handler
 
 include(GNUInstallDirs)
 
-set(SYSTEMD_UNIT_DIR ${CMAKE_INSTALL_LIBDIR}/systemd/system)
-set(UDEV_DIR ${CMAKE_INSTALL_LIBDIR}/udev)
+set(SYSTEMD_UNIT_DIR "lib/systemd/system/")
+set(UDEV_DIR "lib/udev/")
 
 install(TARGETS touch_keyboard_handler
 	DESTINATION "${CMAKE_INSTALL_SBINDIR}")
