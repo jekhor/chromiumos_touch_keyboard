@@ -1,3 +1,10 @@
+touch-keyboard (1.4.6) unstable; urgency=medium
+
+  * Set force-feedback magnitude and duration from command-line.
+  * Fix minor building issue
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Sun, 02 Nov 2025 23:20:04 +0200
+
 touch-keyboard (1.4.5) unstable; urgency=medium
 
   * Vibration feedback support
