@@ -1,4 +1,4 @@
-name: Packages for Ubuntu
+bsname: Packages for Ubuntu
 
 on:
   push:
@@ -29,5 +29,5 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v5.0.0
       with:
-        name: dist-without-markdown
+        name: debs
         path: out-debs/*
