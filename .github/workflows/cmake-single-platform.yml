@@ -1,4 +1,4 @@
-bsname: Packages for Ubuntu
+name: Packages for Ubuntu
 
 on:
   push:
@@ -25,7 +25,6 @@ jobs:
         cp ../*.buildinfo out-debs/
         cp ../*.tar.xz out-debs/
         cp ../*.dsc out-debs/
-
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v5.0.0
