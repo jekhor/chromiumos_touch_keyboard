@@ -20,7 +20,6 @@ jobs:
         mkdir out-debs
         cp ../*.deb out-debs/
         cp ../*.ddeb out-debs/
-        cp ../*.udeb out-debs/
         cp ../*.changes out-debs/
         cp ../*.buildinfo out-debs/
         cp ../*.tar.xz out-debs/
