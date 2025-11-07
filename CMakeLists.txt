@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.22)
 
 project(chromiumos_touch_keyboard)
+
+find_package(PkgConfig)
 
 include_directories("${PROJECT_BINARY_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
@@ -23,8 +25,11 @@ add_executable(touch_keyboard_handler
 
 include(GNUInstallDirs)
 
-set(SYSTEMD_UNIT_DIR "lib/systemd/system/")
-set(UDEV_DIR "lib/udev/")
+pkg_check_modules(SYSTEMD "systemd")
+pkg_get_variable(SYSTEMD_SYSTEM_UNIT_DIR systemd systemdsystemunitdir)
+
+pkg_check_modules(UDEV "udev")
+pkg_get_variable(UDEV_DIR udev udevdir)
 
 install(TARGETS touch_keyboard_handler
 	DESTINATION "${CMAKE_INSTALL_SBINDIR}")
@@ -42,5 +47,5 @@ install(FILES 61-evdev-yogabook.hwdb
 	DESTINATION ${UDEV_DIR}/hwdb.d)
 
 install(FILES touch-keyboard-handler.service
-	DESTINATION ${SYSTEMD_UNIT_DIR})
+	DESTINATION ${SYSTEMD_SYSTEM_UNIT_DIR})
 
