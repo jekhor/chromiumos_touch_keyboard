@@ -16,9 +16,15 @@ jobs:
     - name: Build Ubuntu packages
       run: |
         sudo apt install build-essential cmake debhelper-compat
-        dpkg-buildpackage -uc -us
+        dpkg-buildpackage --no-sign
         mkdir out-debs
-        'cp ../{*.deb,*.changes,*.buildinfo,*.tar.gz,*.dsc} out-debs/'
+        cp ../*.deb out-debs/
+        cp ../*.ddeb out-debs/
+        cp ../*.udeb out-debs/
+        cp ../*.changes out-debs/
+        cp ../*.buildinfo out-debs/
+        cp ../*.tar.xz out-debs/
+        cp ../*.dsc out-debs/
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v5.0.0
